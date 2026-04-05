@@ -222,12 +222,23 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
 
   <!-- PREVIEW -->
   <div id="tab-preview" class="tab-content">
-    <div id="preview-zone">
-      <div style="text-align:center;padding:40px;color:#888">
-        <div style="font-size:3em;margin-bottom:10px">📄</div>
-        لم يتم توليد مقال بعد
-        <br><button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
+    <div id="preview-empty" class="card" style="text-align:center;padding:40px">
+      <div style="font-size:3em">📄</div>
+      <div style="color:#888;margin-top:10px">لم يتم توليد مقال بعد</div>
+      <button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
+    </div>
+    <div id="preview-content" style="display:none">
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <div id="preview-title" style="font-weight:700;color:#0a3d2e"></div>
+          <div id="preview-chars" style="color:#888;font-size:.8em;margin-top:2px"></div>
+        </div>
+        <div class="row" style="margin:0">
+          <button class="btn-au" id="btn-pub" onclick="publishArticle()">🚀 نشر على GitHub Pages</button>
+          <button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>
+        </div>
       </div>
+      <div class="preview-area" id="preview-body"></div>
     </div>
   </div>
 
@@ -688,126 +699,122 @@ ${siteFooter()}</body></html>`;
 // ═══════════════════════════════════════════════
 // AI PROMPT
 // ═══════════════════════════════════════════════
-function buildPrompt(surahName, sN, aN, lang) {
-  lang = lang || 'ar';
+function buildPrompt(surahName, sN, aN, lang='ar') {
+  const langMap = {
+    ar: 'اكتب باللغة العربية الفصحى فقط.',
+    fr: 'Écris entièrement en français fluide et élégant.',
+    en: 'Write entirely in clear, engaging English.',
+    tr: 'Tamamen akıcı ve etkileyici Türkçe yaz.',
+    id: 'Tulis seluruhnya dalam Bahasa Indonesia yang jelas dan menarik.'
+  };
 
-  // Build the prompt text based on language
-  var promptAr = "أنت عالِمٌ متخصص في علوم القرآن والتفسير والبلاغة العربية. مهمتك كتابة مقال تفسيري متعمق ومنهجي دقيق.\n\n";
-  promptAr += "السورة: " + surahName + " (رقم " + sN + ") — الآية رقم: " + aN + "\n\n";
-  promptAr += "════ قواعد صارمة لا استثناء فيها: ════\n";
-  promptAr += "① اللغة: عربية فصحى رصينة سلسة — ممنوع منعاً باتاً أي كلمة أجنبية (لا فرنسية لا إنجليزية لا غيرها)\n";
-  promptAr += "② المراجع: كل رأي يُنسب حصراً لصاحبه بصيغة (قال ابن كثير رحمه الله:) أو (ذكر الطبري في جامع البيان:)\n";
-  promptAr += "③ لا تخترع معلومات: إن لم يثبت سبب نزول فقل: لم يرد في هذه الآية سبب نزول محدد بسند صحيح\n";
-  promptAr += "④ الشعراوي: اكتب خاطرته بأسلوبه الشعبي الحميم — جمل قصيرة، مخاطبة مباشرة للقارئ، ربط بالحياة اليومية\n";
-  promptAr += "⑤ الإعجاز العلمي: لا تذكر إلا ما أثبته العلم قطعاً — إن لم يوجد فاذكر الإعجاز البلاغي أو التشريعي\n";
-  promptAr += "⑥ الأسلوب: منهجي متسلسل — كل فكرة تُكمل ما قبلها — لا تكرار لا حشو لا ترجمة\n";
-  promptAr += "⑦ العبرة: هي أثمن ما في المقال — اجعلها حية بأمثلة واقعية من القرن 21\n\n";
-  promptAr += "اكتب HTML داخلي فقط (بدون DOCTYPE html body head style):\n\n";
-  promptAr += '<div class="ayah-box"><div class="ayah-text">[نص الآية الكريمة بالرسم العثماني الكامل]</div>';
-  promptAr += '<div class="ayah-ref">سورة ' + surahName + ' — الآية ' + aN + '</div></div>\n\n';
-  promptAr += "<h2>السياق والمقام</h2>\n";
-  promptAr += "<p>[أين هذه الآية في سياق السورة؟ ما الموضوع الذي تعالجه؟ وسبب النزول إن ثبت بسند صحيح — وإن لم يثبت فقل ذلك صراحة بدون اختراع]</p>\n\n";
-  promptAr += "<h2>التفسير المنهجي — أقوال العلماء المنسوبة</h2>\n";
-  promptAr += "<p>اعرض معنى الآية الإجمالي ثم فصّل بأقوال العلماء كل واحد منسوب له:</p>\n";
-  promptAr += "<p>قال الإمام ابن كثير رحمه الله في تفسيره: [قوله الفعلي أو ما يقاربه]</p>\n";
-  promptAr += "<p>وذكر الإمام الطبري في جامع البيان: [قوله]</p>\n";
-  promptAr += "<p>وأضاف الإمام القرطبي في الجامع لأحكام القرآن: [قوله]</p>\n";
-  promptAr += "<p>وبيّن الشيخ السعدي في تيسير الكريم الرحمن: [قوله]</p>\n";
-  promptAr += "<p>وأشار العلامة ابن عاشور في التحرير والتنوير: [قوله]</p>\n\n";
-  promptAr += "<h3>دقائق المفردات والبلاغة</h3>\n";
-  promptAr += "<p>[لكل كلمة مفتاحية: اشتقاقها اللغوي الصحيح + سر اختيارها + الصورة البلاغية إن وجدت — بدقة علمية]</p>\n\n";
-  promptAr += '<div class="sharawi-box"><div class="sh-head"><div class="sh-title">خاطرة الشيخ محمد متولي الشعراوي رحمه الله</div></div>';
-  promptAr += '<div class="sh-body"><p>[اكتب بأسلوب الشعراوي الحميم المباشر: جمل قصيرة — يخاطب القارئ بـ(أخي) أو (يا صديقي) — يضرب مثلاً من الحياة اليومية كالبيت والعمل والسوق — يصل إلى المعنى الروحي بطريقة تلمس القلب — 15 إلى 20 سطراً]</p></div></div>\n\n';
-  promptAr += '<div class="science-box"><div class="sci-title">الإعجاز</div>';
-  promptAr += "<p>[إن وجد إعجاز علمي ثابت قطعاً: اذكر الاكتشاف + تاريخه + وجه الإعجاز. وإن لم يوجد: اذكر الإعجاز البلاغي أو التشريعي أو العددي الثابت]</p></div>\n\n";
-  promptAr += "<h2>العبرة — ثلاثة مستويات</h2>\n";
-  promptAr += '<div class="ibra-box"><div class="ibra-title">الدرس الجوهري</div>';
-  promptAr += "<p><strong>المستوى الأول — العقدي:</strong> [ماذا تُعلّمنا هذه الآية عن علاقتنا بالله؟ بمثال واقعي حي من القرن 21]</p>";
-  promptAr += "<p><strong>المستوى الثاني — النفسي:</strong> [كيف تُغيّر هذه الآية نظرة الإنسان لنفسه؟ بمثال من الواقع المعاصر]</p>";
-  promptAr += "<p><strong>المستوى الثالث — الحضاري:</strong> [ماذا لو طبّقت الأمة هذا المعنى فعلاً؟ بمثال تاريخي أو مستقبلي]</p>";
-  promptAr += "<p><em>تأمّل: [سؤال عميق يبقى مع القارئ]</em></p></div>\n\n";
-  promptAr += "<h2>كيف نعيش هذه الآية اليوم</h2>\n";
-  promptAr += "<p>[ثلاثة تطبيقات عملية ملموسة في حياة المسلم في القرن 21 — محددة وقابلة للتنفيذ فوراً]</p>\n\n";
-  promptAr += '<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3>';
-  promptAr += "<p>[خاتمة دافئة تخاطب القارئ مباشرة وتدعوه للتدبر والعمل]</p></div>\n\n";
-  promptAr += "المعيار: مقال يقرأه عالم فيجده دقيقاً، ويقرأه مبتدئ فيفهمه ويتأثر به. الطول: 1800 كلمة على الأقل. HTML داخلي فقط بدون أي DOCTYPE أو وسوم خارجية.";
+  return `${langMap[lang] || langMap.ar}
 
-  if(lang === 'ar') return promptAr;
+أنت كاتب مسلم ذكي، تكتب مقالات قرآنية طويلة، مشوقة، موثقة، وتصل إلى القلب دون ملل.
 
-  // French
-  if(lang === 'fr') {
-    var p = "Tu es un expert en exégèse coranique et en langue arabe classique. Rédige un article approfondi et rigoureux ENTIÈREMENT EN FRANÇAIS sur:\n";
-    p += "Sourate: " + surahName + " (n°" + sN + ") — Verset: " + aN + "\n\n";
-    p += "Règles strictes: ① Français uniquement, zéro mot étranger ② Chaque avis est attribué à son savant ③ Ne fabrique aucune information — si l'occasion de révélation est inconnue, dis-le honnêtement ④ Structure logique et enchaînée ⑤ Miracle scientifique: seulement si prouvé — sinon mentionne le miracle rhétorique ou législatif\n\n";
-    p += "Structure HTML interne (sans DOCTYPE):\n";
-    p += '<div class="ayah-box"><div class="ayah-text">[Texte arabe du verset]</div><div class="ayah-ref">Sourate ' + surahName + ' — Verset ' + aN + '</div></div>';
-    p += "\n<h2>Contexte et occasion de révélation</h2><p>[contexte précis dans la sourate — occasion de révélation si prouvée, sinon le dire]</p>";
-    p += "\n<h2>Exégèse détaillée des savants</h2><p>Ibn Kathîr a dit: [...] | Al-Tabarî mentionne: [...] | Al-Qurtubî précise: [...] | Al-Sa'dî explique: [...] | Ibn 'Âchour ajoute: [...]</p>";
-    p += "\n<h3>Analyse lexicale et rhétorique</h3><p>[étymologie des mots-clés, figure de style, beauté linguistique]</p>";
-    p += '\n<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Réflexion du Sheikh Al-Sha'râwî</div></div><div class="sh-body"><p>[style direct et chaleureux, exemples concrets de la vie quotidienne, 15-20 lignes]</p></div></div>';
-    p += '\n<div class="science-box"><div class="sci-title">Miracle</div><p>[miracle scientifique si prouvé, sinon rhétorique ou législatif]</p></div>';
-    p += "\n<h2>Les trois niveaux de la leçon</h2>";
-    p += '\n<div class="ibra-box"><div class="ibra-title">L'enseignement fondamental</div><p><strong>Niveau théologique:</strong> [...]</p><p><strong>Niveau psychologique:</strong> [...]</p><p><strong>Niveau civilisationnel:</strong> [...]</p><p><em>Question pour le lecteur: [...]</em></p></div>';
-    p += "\n<h2>Application concrète aujourd'hui</h2><p>[3 applications pratiques dans la vie du XXIe siècle]</p>";
-    p += '\n<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>[conclusion s'adressant directement au lecteur]</p></div>';
-    p += "\nLongueur: 1800 mots minimum. HTML interne uniquement.";
-    return p;
-  }
+اكتب مقالاً كاملاً عن:
+سورة: ${surahName}
+رقم السورة: ${sN}
+رقم الآية: ${aN}
 
-  // English
-  if(lang === 'en') {
-    var p = "You are a specialist in Quranic exegesis. Write a rigorous scholarly article ENTIRELY IN ENGLISH about:\n";
-    p += "Surah: " + surahName + " (n°" + sN + ") — Verse: " + aN + "\n\n";
-    p += "Strict rules: ① English only ② Attribute every opinion to its scholar ③ Never fabricate — if occasion of revelation unknown, state so ④ Logical structure ⑤ Scientific miracle only if proven — otherwise mention rhetorical or legislative miracle\n\n";
-    p += "HTML structure (no DOCTYPE):\n";
-    p += '<div class="ayah-box"><div class="ayah-text">[Arabic text in Uthmanic script]</div><div class="ayah-ref">Surah ' + surahName + ' — Verse ' + aN + '</div></div>';
-    p += "\n<h2>Context and Occasion of Revelation</h2><p>[precise context in the surah — occasion if proven, otherwise state unknown]</p>";
-    p += "\n<h2>Scholarly Exegesis</h2><p>Ibn Kathir stated: [...] | Al-Tabari mentioned: [...] | Al-Qurtubi noted: [...] | Al-Sa'di explained: [...] | Ibn Ashur added: [...]</p>";
-    p += "\n<h3>Lexical and Rhetorical Analysis</h3><p>[etymology of key words, rhetorical figures, linguistic beauty]</p>";
-    p += '\n<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Sheikh Al-Sha'rawi's Reflection</div></div><div class="sh-body"><p>[warm direct style, everyday examples, 15-20 lines]</p></div></div>';
-    p += '\n<div class="science-box"><div class="sci-title">Miracle</div><p>[scientific if proven, otherwise rhetorical or legislative]</p></div>';
-    p += "\n<h2>The Lesson — Three Levels</h2>";
-    p += '\n<div class="ibra-box"><div class="ibra-title">Core Teaching</div><p><strong>Theological:</strong> [...]</p><p><strong>Psychological:</strong> [...]</p><p><strong>Civilizational:</strong> [...]</p><p><em>Reflection: [deep question for the reader]</em></p></div>';
-    p += "\n<h2>Practical Application Today</h2><p>[3 concrete applications in 21st century life]</p>";
-    p += '\n<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>[conclusion addressing reader directly]</p></div>';
-    p += "\nMinimum 1800 words. Internal HTML only.";
-    return p;
-  }
+الشروط الكبرى:
+- المقال يجب أن يكون طويلاً لكنه مشوق.
+- اجعل النص متدفقاً مثل رحلة فكرية وإنسانية، وليس مجرد تجميع جامد.
+- لا تستخدم كلمات أجنبية داخل النص العربي.
+- لا تجعل الأسلوب وعظياً ثقيلاً أو مدرسياً جافاً.
+- لا تكرر نفس الجمل المشهورة في كل مقال.
+- اذكر فقط ما هو نافع ومؤثر.
+- إذا لم يثبت سبب النزول أو الإعجاز العلمي فلا تخترع شيئاً.
+- إذا استُخدمت أقوال العلماء فلتكن مدمجة بالفائدة، لا على طريقة: قال فلان قال فلان بشكل ممل.
+- المرجع الأعلى هو القرآن، ثم السنة الصحيحة، ثم فهم الصحابة، ثم كبار المفسرين المعتمدين.
 
-  // Turkish
-  if(lang === 'tr') {
-    var p = "Sen Kuran tefsiri uzmanısın. YALNIZCA TÜRKÇE kapsamlı makale yaz:\n";
-    p += "Sure: " + surahName + " (No." + sN + ") — Ayet: " + aN + "\n\n";
-    p += "Kurallar: ① Sadece Türkçe ② Her görüşü alimini belirterek aktar ③ Bilgi uydurma ④ Mantıklı yapı\n\n";
-    p += "HTML yapısı (DOCTYPE yok): " + '<div class="ayah-box"><div class="ayah-text">[Arapça metin]</div><div class="ayah-ref">Sure ' + surahName + ' — Ayet ' + aN + '</div></div>';
-    p += "\n<h2>Bağlam ve İniş Sebebi</h2><p>[bilinmiyorsa dürüstçe belirt]</p>";
-    p += "\n<h2>Alimlerin Tefsiri</h2><p>İbn Kesir: [...] | Taberi: [...] | Kurtubi: [...] | Sa'di: [...] | İbn Aşur: [...]</p>";
-    p += "\n<h3>Kelime ve Belagat Analizi</h3><p>[etimoloji, edebi sanatlar]</p>";
-    p += '\n<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Şeyh Şa'ravi'nin Düşüncesi</div></div><div class="sh-body"><p>[sıcak samimi üslup, günlük hayattan örnekler]</p></div></div>';
-    p += '\n<div class="science-box"><div class="sci-title">Mucize</div><p>[bilimsel ise kanıtla, değilse belagat mucizesi]</p></div>';
-    p += '\n<h2>Üç Seviyede Ders</h2><div class="ibra-box"><div class="ibra-title">Temel Öğreti</div><p><strong>Akidevi:</strong> [...]</p><p><strong>Psikolojik:</strong> [...]</p><p><strong>Medeniyet:</strong> [...]</p><p><em>Düşünce sorusu: [...]</em></p></div>';
-    p += "\n<h2>Bugün Pratik Uygulama</h2><p>[21. yüzyılda 3 somut uygulama]</p>";
-    p += '\n<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>[okuyucuya hitap eden sonuç]</p></div>';
-    p += "\nEn az 1800 kelime. Yalnızca iç HTML.";
-    return p;
-  }
+اكتب المقال في HTML داخلي فقط، بدون DOCTYPE أو html أو body أو style.
 
-  // Indonesian
-  var p = "Anda pakar tafsir Al-Quran. Tulis artikel ilmiah BAHASA INDONESIA SAJA tentang:\n";
-  p += "Surah: " + surahName + " (No." + sN + ") — Ayat: " + aN + "\n\n";
-  p += "Aturan: ① Bahasa Indonesia saja ② Setiap pendapat dikaitkan ulamannya ③ Jangan mengarang ④ Struktur logis\n\n";
-  p += "Struktur HTML (tanpa DOCTYPE): " + '<div class="ayah-box"><div class="ayah-text">[Teks Arab Utsmani]</div><div class="ayah-ref">Surah ' + surahName + ' — Ayat ' + aN + '</div></div>';
-  p += "\n<h2>Konteks dan Asbabun Nuzul</h2><p>[jika tidak diketahui, nyatakan jujur]</p>";
-  p += "\n<h2>Tafsir Para Ulama</h2><p>Ibnu Katsir: [...] | Al-Thabari: [...] | Al-Qurthubi: [...] | Al-Sa'di: [...] | Ibnu Asyur: [...]</p>";
-  p += "\n<h3>Analisis Kosakata dan Balaghah</h3><p>[etimologi, majas]</p>";
-  p += '\n<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Renungan Syekh Al-Sya'rawi</div></div><div class="sh-body"><p>[gaya hangat langsung, contoh kehidupan sehari-hari]</p></div></div>';
-  p += '\n<div class="science-box"><div class="sci-title">Kemukjizatan</div><p>[ilmiah jika terbukti, jika tidak: balaghah atau tasyri'i]</p></div>';
-  p += '\n<h2>Tiga Tingkat Pelajaran</h2><div class="ibra-box"><div class="ibra-title">Inti Pelajaran</div><p><strong>Akidah:</strong> [...]</p><p><strong>Psikologi:</strong> [...]</p><p><strong>Peradaban:</strong> [...]</p><p><em>Perenungan: [pertanyaan untuk pembaca]</em></p></div>';
-  p += "\n<h2>Penerapan Praktis Hari Ini</h2><p>[3 penerapan konkret abad ke-21]</p>";
-  p += '\n<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>[penutup kepada pembaca]</p></div>';
-  p += "\nMinimal 1800 kata. HTML internal saja.";
-  return p;
+ابدأ بهذا الشكل:
+
+<div class="ayah-box">
+  <div class="ayah-text">[نص الآية كاملاً بالرسم العثماني]</div>
+  <div class="ayah-ref">سورة ${surahName} — الآية ${aN}</div>
+</div>
+
+ثم اكتب المقال بهذه الروح والبنية:
+
+<h2>📍 مدخل يمسّ الإنسان</h2>
+<p>
+ابدأ بمقدمة إنسانية جذابة تمسّ القارئ مباشرة:
+موقف، سؤال، شعور، أزمة، رجاء، خوف، بحث عن معنى.
+اجعل القارئ يشعر أن هذه الآية ليست بعيدة عنه.
+</p>
+
+<h2>📚 المعنى والتفسير الموثق</h2>
+<p>
+اشرح معنى الآية شرحاً واضحاً ومتيناً، بلغة سهلة وجميلة.
+ادمج المعاني الموثقة من التفسير والسنة وأقوال الصحابة والمفسرين الكبار بشكل سلس.
+لا تسرد أسماء كثيرة. ركّز على الفائدة.
+</p>
+
+<h2>🕰️ سبب النزول والسياق التاريخي</h2>
+<p>
+إذا كان سبب النزول ثابتاً ومفيداً، فاذكره بطريقة حية تعطي القارئ صورة عن الزمن النبوي والحدث والناس.
+إذا لم يوجد شيء ثابت، فاذكر سياق السورة أو الجو العام للآية دون اختلاق.
+</p>
+
+<h2>🔤 المفردات والبلاغة</h2>
+<p>
+اشرح الكلمات المحورية واللمسات البلاغية التي تزيد المعنى جمالاً وعمقاً.
+</p>
+
+<h2>🎙️ لمسة الشعراوي</h2>
+<p>
+أدخل خاطرة جميلة مستوحاة من روح الشيخ الشعراوي، بأسلوب جذاب يفتح المعنى للقلب،
+لكن بدون تقليد ركيك أو مبالغة.
+اجعلها إضافة مشوقة فعلاً.
+</p>
+
+<h2>🔬 الإعجاز العلمي</h2>
+<p>
+إذا وُجد في الآية وجه قوي يمكن ربطه بحقيقة كونية أو علمية معتبرة دون تكلف، فاذكره بإيجاز ذكي يبعث الدهشة.
+أما إذا لم يوجد وجه قوي، فاجعل الفقرة صادقة وتتكلم عن اتساع دلالة الآية عبر الزمن دون ادعاء.
+</p>
+
+<h2>💎 العبرة العميقة — ثلاثة مستويات</h2>
+<div class="ibra-box">
+  <div class="ibra-title">💎 العبرة الجوهرية:</div>
+  <p><strong>① المستوى العقدي:</strong> استخرج من الآية معنى عقدياً واضحاً وعميقاً، يربط الإنسان بالله ربطاً حيّاً.</p>
+  <p><strong>② المستوى النفسي:</strong> بيّن كيف تغيّر هذه الآية نظرة الإنسان إلى نفسه، إلى ضعفه، إلى خوفه، إلى أمله، أو إلى مسؤوليته.</p>
+  <p><strong>③ المستوى الحضاري:</strong> بيّن كيف يمكن أن تغيّر هذه الآية حياة الناس والمجتمعات إذا فُهمت وطُبقت بصدق.</p>
+  <p><em>ثم اطرح سؤالاً عميقاً يبقى في الذهن، لا سؤالاً عادياً.</em></p>
+</div>
+
+<p>
+بعد ذلك، وسّع العبرة بمثال أو تجربة إنسانية مستوحاة من الواقع، من الحياة اليومية أو من التاريخ أو من مشهد معاصر.
+اجعل القارئ يرى المعنى لا أن يسمعه فقط.
+</p>
+
+<h2>🌍 التطبيق في حياتنا اليوم</h2>
+<p>
+قدّم تطبيقات عملية واقعية ومباشرة، قابلة للفهم والتنفيذ في حياة الإنسان اليوم:
+في الأسرة، في العمل، في القلق، في العلاقات، في القرار، في العبادة، في المجتمع.
+</p>
+
+<h2>🕌 القرآن رسالة لك أنت</h2>
+<div class="cta-box">
+  <h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3>
+  <p>
+  اختم بخاتمة مؤثرة تخاطب القارئ مباشرة، وتدعوه إلى التدبر، لا بوعظ ثقيل، بل بنداء هادئ قوي.
+  </p>
+</div>
+
+متطلبات الأسلوب:
+- اكتب مقالاً طويلاً، عميقاً، مشوقاً، غير ممل.
+- اجعل الفقرات متنوعة الإيقاع.
+- لا تجعل كل الأقسام متشابهة في الجمل.
+- لا تكتب جملاً عامة فارغة مثل: "لو طبقت البشرية هذا المعنى لصار العالم أفضل" إلا إذا صغتها بشكل حي ومحدد.
+- ليكن المقال فيه علم، روح، واقع، وجاذبية.
+- الطول المستهدف: بين 1200 و 1800 كلمة تقريباً.
+- HTML داخلي فقط.`;
 }
+
 
 // ═══════════════════════════════════════════════
 // TEST CONNECTION
@@ -931,25 +938,15 @@ async function generateArticle(sN=null, aN=null) {
       slug:'surah-'+surahN+'-ayah-'+ayahN+(document.getElementById('sel-lang').value!='ar'?'-'+document.getElementById('sel-lang').value:''),
       content:text
     };
-    // Render preview directly into the zone
-    var zone = document.getElementById('preview-zone');
-    zone.innerHTML = 
-      '<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">' +
-        '<div>' +
-          '<div style="font-weight:700;color:#0a3d2e;font-size:1em">' + preview.title + '</div>' +
-          '<div style="color:#888;font-size:.8em;margin-top:2px">' + preview.content.length.toLocaleString() + ' حرف</div>' +
-        '</div>' +
-        '<div class="row" style="margin:0">' +
-          '<button class="btn-au" id="btn-pub" onclick="publishArticle()">نشر على GitHub Pages</button>' +
-          '<button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="preview-area" id="preview-body"></div>';
+    document.getElementById('preview-title').textContent = preview.title;
+    document.getElementById('preview-chars').textContent = preview.content.length.toLocaleString() + ' حرف';
     document.getElementById('preview-body').innerHTML = preview.content;
-    document.querySelectorAll('.tab')[2].textContent = 'معاينة (جاهز)';
+    document.getElementById('preview-empty').style.display = 'none';
+    document.getElementById('preview-content').style.display = 'block';
+    document.getElementById('tab-preview').textContent = '👁️ معاينة ✓';
     document.getElementById('btn-preview').style.display = 'inline-block';
     addLog('[OK] تم توليد: '+preview.title,'success');
-    switchTab('preview');
+    setTimeout(function(){ switchTab('preview'); }, 100);
   } catch(e) {
     addLog('[X] '+e.message,'error');
   }
@@ -965,8 +962,8 @@ async function publishArticle() {
   if(!preview){addLog('[X] لا يوجد مقال','error');return;}
   if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أكمل إعدادات GitHub','error');switchTab('config');return;}
 
-  var pb = document.getElementById('btn-pub');
-  if(pb){ pb.disabled = true; pb.textContent = 'ينشر...'; }
+  document.getElementById('btn-pub').disabled = true;
+  document.getElementById('btn-pub').textContent = '⏳ ينشر...';
   addLog('[>>>] ينشر: '+preview.title+'...');
 
   try {
@@ -989,8 +986,8 @@ async function publishArticle() {
     addLog('[X] نشر فشل: '+e.message,'error');
     console.error('Publish error:', e);
   }
-  var pb2 = document.getElementById('btn-pub');
-  if(pb2){ pb2.disabled = false; pb2.textContent = 'نشر على GitHub Pages'; }
+  document.getElementById('btn-pub').disabled = false;
+  document.getElementById('btn-pub').textContent = '🚀 نشر على GitHub Pages';
 }
 
 // ═══════════════════════════════════════════════
