@@ -1,4 +1,6 @@
-<html lang="ar" dir="rtl"><head>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>عميل نور القرآن — Groq مجاني</title>
@@ -90,7 +92,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
   <button class="tab" onclick="switchTab('logs')">📋 السجل</button>
 </div>
 
-<div id="logbar" class="logbar show success">[OK] intro.html</div>
+<div id="logbar" class="logbar"></div>
 
 <div class="body">
 
@@ -124,8 +126,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         <label class="lbl">🔑 Personal Access Token</label>
         <input type="password" id="cfg-token" class="inp" placeholder="ghp_xxxxxxxxxx">
       </div>
-      <div class="gold" id="site-url-box" style="display: block;">
-        موقعك : <strong id="site-url">https://khayati-quran.github.io/Verses-nour</strong>
+      <div class="gold" id="site-url-box" style="display:none">
+        موقعك : <strong id="site-url"></strong>
       </div>
       <div class="info" id="agent-link-box" style="display:none;margin-top:8px;">
         <strong>رابط الأداة على GitHub Pages (احفظه!) :</strong><br>
@@ -133,7 +135,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         <div style="margin-top:6px;font-size:.78em;color:#555;">استخدم هذا الرابط بدلاً من Blogger — يعمل بشكل مثالي</div>
       </div>
       <div class="row">
-        <button class="btn-g" onclick="initRepo()" disabled="">🚀 تهيئة الموقع (4 صفحات)</button>
+        <button class="btn-g" id="btn-init" onclick="initRepo()">تهيئة الموقع (4 صفحات)</button>
+        <button class="btn-o" onclick="testConnection()" style="margin-right:8px">اختبار الاتصال</button>
         <button class="btn-o" id="btn-next" onclick="switchTab('generate')" style="display:none">التالي ←</button>
       </div>
     </div>
@@ -157,11 +160,11 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
       <div class="grid2" style="margin-bottom:14px;margin-top:12px;">
         <div>
           <label class="lbl">📖 السورة</label>
-          <select id="sel-surah" class="sel" onchange="updateAyahs()"><option value="1">1. الفاتحة (7)</option><option value="2">2. البقرة (286)</option><option value="3">3. آل عمران (200)</option><option value="4">4. النساء (176)</option><option value="5">5. المائدة (120)</option><option value="6">6. الأنعام (165)</option><option value="7">7. الأعراف (206)</option><option value="8">8. الأنفال (75)</option><option value="9">9. التوبة (129)</option><option value="10">10. يونس (109)</option><option value="11">11. هود (123)</option><option value="12">12. يوسف (111)</option><option value="13">13. الرعد (43)</option><option value="14">14. إبراهيم (52)</option><option value="15">15. الحجر (99)</option><option value="16">16. النحل (128)</option><option value="17">17. الإسراء (111)</option><option value="18">18. الكهف (110)</option><option value="19">19. مريم (98)</option><option value="20">20. طه (135)</option><option value="21">21. الأنبياء (112)</option><option value="22">22. الحج (78)</option><option value="23">23. المؤمنون (118)</option><option value="24">24. النور (64)</option><option value="25">25. الفرقان (77)</option><option value="26">26. الشعراء (227)</option><option value="27">27. النمل (93)</option><option value="28">28. القصص (88)</option><option value="29">29. العنكبوت (69)</option><option value="30">30. الروم (60)</option><option value="31">31. لقمان (34)</option><option value="32">32. السجدة (30)</option><option value="33">33. الأحزاب (73)</option><option value="34">34. سبأ (54)</option><option value="35">35. فاطر (45)</option><option value="36">36. يس (83)</option><option value="37">37. الصافات (182)</option><option value="38">38. ص (88)</option><option value="39">39. الزمر (75)</option><option value="40">40. غافر (85)</option><option value="41">41. فصلت (54)</option><option value="42">42. الشورى (53)</option><option value="43">43. الزخرف (89)</option><option value="44">44. الدخان (59)</option><option value="45">45. الجاثية (37)</option><option value="46">46. الأحقاف (35)</option><option value="47">47. محمد (38)</option><option value="48">48. الفتح (29)</option><option value="49">49. الحجرات (18)</option><option value="50">50. ق (45)</option><option value="51">51. الذاريات (60)</option><option value="52">52. الطور (49)</option><option value="53">53. النجم (62)</option><option value="54">54. القمر (55)</option><option value="55">55. الرحمن (78)</option><option value="56">56. الواقعة (96)</option><option value="57">57. الحديد (29)</option><option value="58">58. المجادلة (22)</option><option value="59">59. الحشر (24)</option><option value="60">60. الممتحنة (13)</option><option value="61">61. الصف (14)</option><option value="62">62. الجمعة (11)</option><option value="63">63. المنافقون (11)</option><option value="64">64. التغابن (18)</option><option value="65">65. الطلاق (12)</option><option value="66">66. التحريم (12)</option><option value="67">67. الملك (30)</option><option value="68">68. القلم (52)</option><option value="69">69. الحاقة (52)</option><option value="70">70. المعارج (44)</option><option value="71">71. نوح (28)</option><option value="72">72. الجن (28)</option><option value="73">73. المزمل (20)</option><option value="74">74. المدثر (56)</option><option value="75">75. القيامة (40)</option><option value="76">76. الإنسان (31)</option><option value="77">77. المرسلات (50)</option><option value="78">78. النبأ (40)</option><option value="79">79. النازعات (46)</option><option value="80">80. عبس (42)</option><option value="81">81. التكوير (29)</option><option value="82">82. الانفطار (19)</option><option value="83">83. المطففين (36)</option><option value="84">84. الانشقاق (25)</option><option value="85">85. البروج (22)</option><option value="86">86. الطارق (17)</option><option value="87">87. الأعلى (19)</option><option value="88">88. الغاشية (26)</option><option value="89">89. الفجر (30)</option><option value="90">90. البلد (20)</option><option value="91">91. الشمس (15)</option><option value="92">92. الليل (21)</option><option value="93">93. الضحى (11)</option><option value="94">94. الشرح (8)</option><option value="95">95. التين (8)</option><option value="96">96. العلق (19)</option><option value="97">97. القدر (5)</option><option value="98">98. البينة (8)</option><option value="99">99. الزلزلة (8)</option><option value="100">100. العاديات (11)</option><option value="101">101. القارعة (11)</option><option value="102">102. التكاثر (8)</option><option value="103">103. العصر (3)</option><option value="104">104. الهمزة (9)</option><option value="105">105. الفيل (5)</option><option value="106">106. قريش (4)</option><option value="107">107. الماعون (7)</option><option value="108">108. الكوثر (3)</option><option value="109">109. الكافرون (6)</option><option value="110">110. النصر (3)</option><option value="111">111. المسد (5)</option><option value="112">112. الإخلاص (4)</option><option value="113">113. الفلق (5)</option><option value="114">114. الناس (6)</option></select>
+          <select id="sel-surah" class="sel" onchange="updateAyahs()"></select>
         </div>
         <div>
           <label class="lbl">📍 الآية</label>
-          <select id="sel-ayah" class="sel"><option value="1">الآية 1</option><option value="2">الآية 2</option><option value="3">الآية 3</option><option value="4">الآية 4</option><option value="5">الآية 5</option><option value="6">الآية 6</option><option value="7">الآية 7</option></select>
+          <select id="sel-ayah" class="sel"></select>
         </div>
       </div>
       <div class="row">
@@ -175,7 +178,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
       <div class="grid4" style="margin-bottom:12px;margin-top:10px;">
         <div>
           <label class="lbl">من سورة</label>
-          <select id="batch-surah" class="sel"><option value="1">1. الفاتحة (7)</option><option value="2">2. البقرة (286)</option><option value="3">3. آل عمران (200)</option><option value="4">4. النساء (176)</option><option value="5">5. المائدة (120)</option><option value="6">6. الأنعام (165)</option><option value="7">7. الأعراف (206)</option><option value="8">8. الأنفال (75)</option><option value="9">9. التوبة (129)</option><option value="10">10. يونس (109)</option><option value="11">11. هود (123)</option><option value="12">12. يوسف (111)</option><option value="13">13. الرعد (43)</option><option value="14">14. إبراهيم (52)</option><option value="15">15. الحجر (99)</option><option value="16">16. النحل (128)</option><option value="17">17. الإسراء (111)</option><option value="18">18. الكهف (110)</option><option value="19">19. مريم (98)</option><option value="20">20. طه (135)</option><option value="21">21. الأنبياء (112)</option><option value="22">22. الحج (78)</option><option value="23">23. المؤمنون (118)</option><option value="24">24. النور (64)</option><option value="25">25. الفرقان (77)</option><option value="26">26. الشعراء (227)</option><option value="27">27. النمل (93)</option><option value="28">28. القصص (88)</option><option value="29">29. العنكبوت (69)</option><option value="30">30. الروم (60)</option><option value="31">31. لقمان (34)</option><option value="32">32. السجدة (30)</option><option value="33">33. الأحزاب (73)</option><option value="34">34. سبأ (54)</option><option value="35">35. فاطر (45)</option><option value="36">36. يس (83)</option><option value="37">37. الصافات (182)</option><option value="38">38. ص (88)</option><option value="39">39. الزمر (75)</option><option value="40">40. غافر (85)</option><option value="41">41. فصلت (54)</option><option value="42">42. الشورى (53)</option><option value="43">43. الزخرف (89)</option><option value="44">44. الدخان (59)</option><option value="45">45. الجاثية (37)</option><option value="46">46. الأحقاف (35)</option><option value="47">47. محمد (38)</option><option value="48">48. الفتح (29)</option><option value="49">49. الحجرات (18)</option><option value="50">50. ق (45)</option><option value="51">51. الذاريات (60)</option><option value="52">52. الطور (49)</option><option value="53">53. النجم (62)</option><option value="54">54. القمر (55)</option><option value="55">55. الرحمن (78)</option><option value="56">56. الواقعة (96)</option><option value="57">57. الحديد (29)</option><option value="58">58. المجادلة (22)</option><option value="59">59. الحشر (24)</option><option value="60">60. الممتحنة (13)</option><option value="61">61. الصف (14)</option><option value="62">62. الجمعة (11)</option><option value="63">63. المنافقون (11)</option><option value="64">64. التغابن (18)</option><option value="65">65. الطلاق (12)</option><option value="66">66. التحريم (12)</option><option value="67">67. الملك (30)</option><option value="68">68. القلم (52)</option><option value="69">69. الحاقة (52)</option><option value="70">70. المعارج (44)</option><option value="71">71. نوح (28)</option><option value="72">72. الجن (28)</option><option value="73">73. المزمل (20)</option><option value="74">74. المدثر (56)</option><option value="75">75. القيامة (40)</option><option value="76">76. الإنسان (31)</option><option value="77">77. المرسلات (50)</option><option value="78">78. النبأ (40)</option><option value="79">79. النازعات (46)</option><option value="80">80. عبس (42)</option><option value="81">81. التكوير (29)</option><option value="82">82. الانفطار (19)</option><option value="83">83. المطففين (36)</option><option value="84">84. الانشقاق (25)</option><option value="85">85. البروج (22)</option><option value="86">86. الطارق (17)</option><option value="87">87. الأعلى (19)</option><option value="88">88. الغاشية (26)</option><option value="89">89. الفجر (30)</option><option value="90">90. البلد (20)</option><option value="91">91. الشمس (15)</option><option value="92">92. الليل (21)</option><option value="93">93. الضحى (11)</option><option value="94">94. الشرح (8)</option><option value="95">95. التين (8)</option><option value="96">96. العلق (19)</option><option value="97">97. القدر (5)</option><option value="98">98. البينة (8)</option><option value="99">99. الزلزلة (8)</option><option value="100">100. العاديات (11)</option><option value="101">101. القارعة (11)</option><option value="102">102. التكاثر (8)</option><option value="103">103. العصر (3)</option><option value="104">104. الهمزة (9)</option><option value="105">105. الفيل (5)</option><option value="106">106. قريش (4)</option><option value="107">107. الماعون (7)</option><option value="108">108. الكوثر (3)</option><option value="109">109. الكافرون (6)</option><option value="110">110. النصر (3)</option><option value="111">111. المسد (5)</option><option value="112">112. الإخلاص (4)</option><option value="113">113. الفلق (5)</option><option value="114">114. الناس (6)</option></select>
+          <select id="batch-surah" class="sel"></select>
         </div>
         <div>
           <label class="lbl">من آية</label>
@@ -238,7 +241,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         <div class="progress-fill" id="prog-fill" style="width:0%"></div>
         <div class="progress-txt" id="prog-txt">0.00% مكتمل</div>
       </div>
-      <div class="surah-grid" id="surah-grid"><div class="surah-card "><div class="surah-name">الفاتحة</div><div class="surah-count">0/7</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البقرة</div><div class="surah-count">0/286</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">آل عمران</div><div class="surah-count">0/200</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النساء</div><div class="surah-count">0/176</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المائدة</div><div class="surah-count">0/120</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأنعام</div><div class="surah-count">0/165</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأعراف</div><div class="surah-count">0/206</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأنفال</div><div class="surah-count">0/75</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التوبة</div><div class="surah-count">0/129</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">يونس</div><div class="surah-count">0/109</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">هود</div><div class="surah-count">0/123</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">يوسف</div><div class="surah-count">0/111</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الرعد</div><div class="surah-count">0/43</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">إبراهيم</div><div class="surah-count">0/52</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحجر</div><div class="surah-count">0/99</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النحل</div><div class="surah-count">0/128</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الإسراء</div><div class="surah-count">0/111</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الكهف</div><div class="surah-count">0/110</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">مريم</div><div class="surah-count">0/98</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">طه</div><div class="surah-count">0/135</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأنبياء</div><div class="surah-count">0/112</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحج</div><div class="surah-count">0/78</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المؤمنون</div><div class="surah-count">0/118</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النور</div><div class="surah-count">0/64</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفرقان</div><div class="surah-count">0/77</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشعراء</div><div class="surah-count">0/227</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النمل</div><div class="surah-count">0/93</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القصص</div><div class="surah-count">0/88</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العنكبوت</div><div class="surah-count">0/69</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الروم</div><div class="surah-count">0/60</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">لقمان</div><div class="surah-count">0/34</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">السجدة</div><div class="surah-count">0/30</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأحزاب</div><div class="surah-count">0/73</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">سبأ</div><div class="surah-count">0/54</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">فاطر</div><div class="surah-count">0/45</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">يس</div><div class="surah-count">0/83</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الصافات</div><div class="surah-count">0/182</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">ص</div><div class="surah-count">0/88</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الزمر</div><div class="surah-count">0/75</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">غافر</div><div class="surah-count">0/85</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">فصلت</div><div class="surah-count">0/54</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشورى</div><div class="surah-count">0/53</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الزخرف</div><div class="surah-count">0/89</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الدخان</div><div class="surah-count">0/59</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الجاثية</div><div class="surah-count">0/37</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأحقاف</div><div class="surah-count">0/35</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">محمد</div><div class="surah-count">0/38</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفتح</div><div class="surah-count">0/29</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحجرات</div><div class="surah-count">0/18</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">ق</div><div class="surah-count">0/45</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الذاريات</div><div class="surah-count">0/60</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الطور</div><div class="surah-count">0/49</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النجم</div><div class="surah-count">0/62</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القمر</div><div class="surah-count">0/55</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الرحمن</div><div class="surah-count">0/78</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الواقعة</div><div class="surah-count">0/96</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحديد</div><div class="surah-count">0/29</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المجادلة</div><div class="surah-count">0/22</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحشر</div><div class="surah-count">0/24</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الممتحنة</div><div class="surah-count">0/13</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الصف</div><div class="surah-count">0/14</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الجمعة</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المنافقون</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التغابن</div><div class="surah-count">0/18</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الطلاق</div><div class="surah-count">0/12</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التحريم</div><div class="surah-count">0/12</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الملك</div><div class="surah-count">0/30</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القلم</div><div class="surah-count">0/52</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحاقة</div><div class="surah-count">0/52</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المعارج</div><div class="surah-count">0/44</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">نوح</div><div class="surah-count">0/28</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الجن</div><div class="surah-count">0/28</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المزمل</div><div class="surah-count">0/20</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المدثر</div><div class="surah-count">0/56</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القيامة</div><div class="surah-count">0/40</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الإنسان</div><div class="surah-count">0/31</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المرسلات</div><div class="surah-count">0/50</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النبأ</div><div class="surah-count">0/40</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النازعات</div><div class="surah-count">0/46</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">عبس</div><div class="surah-count">0/42</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التكوير</div><div class="surah-count">0/29</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الانفطار</div><div class="surah-count">0/19</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المطففين</div><div class="surah-count">0/36</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الانشقاق</div><div class="surah-count">0/25</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البروج</div><div class="surah-count">0/22</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الطارق</div><div class="surah-count">0/17</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأعلى</div><div class="surah-count">0/19</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الغاشية</div><div class="surah-count">0/26</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفجر</div><div class="surah-count">0/30</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البلد</div><div class="surah-count">0/20</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشمس</div><div class="surah-count">0/15</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الليل</div><div class="surah-count">0/21</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الضحى</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشرح</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التين</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العلق</div><div class="surah-count">0/19</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القدر</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البينة</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الزلزلة</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العاديات</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القارعة</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التكاثر</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العصر</div><div class="surah-count">0/3</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الهمزة</div><div class="surah-count">0/9</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفيل</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">قريش</div><div class="surah-count">0/4</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الماعون</div><div class="surah-count">0/7</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الكوثر</div><div class="surah-count">0/3</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الكافرون</div><div class="surah-count">0/6</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النصر</div><div class="surah-count">0/3</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المسد</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الإخلاص</div><div class="surah-count">0/4</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفلق</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الناس</div><div class="surah-count">0/6</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div></div>
+      <div class="surah-grid" id="surah-grid"></div>
     </div>
   </div>
 
@@ -249,7 +252,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         <h2 style="color:#0a3d2e;font-size:1.02em">📋 سجل العمليات</h2>
         <button class="btn-o" onclick="clearLogs()">مسح</button>
       </div>
-      <div id="log-list"><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">4:04:14 م</span><span>[OK] intro.html</span></div><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">4:04:12 م</span><span>[OK] references.html</span></div><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">4:04:10 م</span><span>[OK] articles.html</span></div><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">4:04:09 م</span><span>[OK] index.html</span></div><div class="log-entry info"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">4:04:00 م</span><span>[...] تهيئة الموقع...</span></div></div>
+      <div id="log-list"><div style="text-align:center;padding:28px;color:#aaa">لا سجلات</div></div>
     </div>
   </div>
 
@@ -263,15 +266,38 @@ const SURAHS = [
   {n:1,name:"الفاتحة",ayahs:7},{n:2,name:"البقرة",ayahs:286},{n:3,name:"آل عمران",ayahs:200},{n:4,name:"النساء",ayahs:176},{n:5,name:"المائدة",ayahs:120},{n:6,name:"الأنعام",ayahs:165},{n:7,name:"الأعراف",ayahs:206},{n:8,name:"الأنفال",ayahs:75},{n:9,name:"التوبة",ayahs:129},{n:10,name:"يونس",ayahs:109},{n:11,name:"هود",ayahs:123},{n:12,name:"يوسف",ayahs:111},{n:13,name:"الرعد",ayahs:43},{n:14,name:"إبراهيم",ayahs:52},{n:15,name:"الحجر",ayahs:99},{n:16,name:"النحل",ayahs:128},{n:17,name:"الإسراء",ayahs:111},{n:18,name:"الكهف",ayahs:110},{n:19,name:"مريم",ayahs:98},{n:20,name:"طه",ayahs:135},{n:21,name:"الأنبياء",ayahs:112},{n:22,name:"الحج",ayahs:78},{n:23,name:"المؤمنون",ayahs:118},{n:24,name:"النور",ayahs:64},{n:25,name:"الفرقان",ayahs:77},{n:26,name:"الشعراء",ayahs:227},{n:27,name:"النمل",ayahs:93},{n:28,name:"القصص",ayahs:88},{n:29,name:"العنكبوت",ayahs:69},{n:30,name:"الروم",ayahs:60},{n:31,name:"لقمان",ayahs:34},{n:32,name:"السجدة",ayahs:30},{n:33,name:"الأحزاب",ayahs:73},{n:34,name:"سبأ",ayahs:54},{n:35,name:"فاطر",ayahs:45},{n:36,name:"يس",ayahs:83},{n:37,name:"الصافات",ayahs:182},{n:38,name:"ص",ayahs:88},{n:39,name:"الزمر",ayahs:75},{n:40,name:"غافر",ayahs:85},{n:41,name:"فصلت",ayahs:54},{n:42,name:"الشورى",ayahs:53},{n:43,name:"الزخرف",ayahs:89},{n:44,name:"الدخان",ayahs:59},{n:45,name:"الجاثية",ayahs:37},{n:46,name:"الأحقاف",ayahs:35},{n:47,name:"محمد",ayahs:38},{n:48,name:"الفتح",ayahs:29},{n:49,name:"الحجرات",ayahs:18},{n:50,name:"ق",ayahs:45},{n:51,name:"الذاريات",ayahs:60},{n:52,name:"الطور",ayahs:49},{n:53,name:"النجم",ayahs:62},{n:54,name:"القمر",ayahs:55},{n:55,name:"الرحمن",ayahs:78},{n:56,name:"الواقعة",ayahs:96},{n:57,name:"الحديد",ayahs:29},{n:58,name:"المجادلة",ayahs:22},{n:59,name:"الحشر",ayahs:24},{n:60,name:"الممتحنة",ayahs:13},{n:61,name:"الصف",ayahs:14},{n:62,name:"الجمعة",ayahs:11},{n:63,name:"المنافقون",ayahs:11},{n:64,name:"التغابن",ayahs:18},{n:65,name:"الطلاق",ayahs:12},{n:66,name:"التحريم",ayahs:12},{n:67,name:"الملك",ayahs:30},{n:68,name:"القلم",ayahs:52},{n:69,name:"الحاقة",ayahs:52},{n:70,name:"المعارج",ayahs:44},{n:71,name:"نوح",ayahs:28},{n:72,name:"الجن",ayahs:28},{n:73,name:"المزمل",ayahs:20},{n:74,name:"المدثر",ayahs:56},{n:75,name:"القيامة",ayahs:40},{n:76,name:"الإنسان",ayahs:31},{n:77,name:"المرسلات",ayahs:50},{n:78,name:"النبأ",ayahs:40},{n:79,name:"النازعات",ayahs:46},{n:80,name:"عبس",ayahs:42},{n:81,name:"التكوير",ayahs:29},{n:82,name:"الانفطار",ayahs:19},{n:83,name:"المطففين",ayahs:36},{n:84,name:"الانشقاق",ayahs:25},{n:85,name:"البروج",ayahs:22},{n:86,name:"الطارق",ayahs:17},{n:87,name:"الأعلى",ayahs:19},{n:88,name:"الغاشية",ayahs:26},{n:89,name:"الفجر",ayahs:30},{n:90,name:"البلد",ayahs:20},{n:91,name:"الشمس",ayahs:15},{n:92,name:"الليل",ayahs:21},{n:93,name:"الضحى",ayahs:11},{n:94,name:"الشرح",ayahs:8},{n:95,name:"التين",ayahs:8},{n:96,name:"العلق",ayahs:19},{n:97,name:"القدر",ayahs:5},{n:98,name:"البينة",ayahs:8},{n:99,name:"الزلزلة",ayahs:8},{n:100,name:"العاديات",ayahs:11},{n:101,name:"القارعة",ayahs:11},{n:102,name:"التكاثر",ayahs:8},{n:103,name:"العصر",ayahs:3},{n:104,name:"الهمزة",ayahs:9},{n:105,name:"الفيل",ayahs:5},{n:106,name:"قريش",ayahs:4},{n:107,name:"الماعون",ayahs:7},{n:108,name:"الكوثر",ayahs:3},{n:109,name:"الكافرون",ayahs:6},{n:110,name:"النصر",ayahs:3},{n:111,name:"المسد",ayahs:5},{n:112,name:"الإخلاص",ayahs:4},{n:113,name:"الفلق",ayahs:5},{n:114,name:"الناس",ayahs:6}
 ];
 const TOTAL = SURAHS.reduce((s,x)=>s+x.ayahs,0);
-const WORKER = "https://nour-quran-worker.khayati1hafedh.workers.dev/github";
+const GH_API = "https://api.github.com";
 
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-let articles = JSON.parse(localStorage.getItem('nq-articles') || '[]');
+let articles = [];
+try { articles = JSON.parse(localStorage.getItem('nq-articles') || '[]'); } catch(e) { articles = []; }
 let preview = null;
 let batchRunning = false;
 let logs = [];
+
+// ═══════════════════════════════════════════════
+// TEST CONNECTION
+// ═══════════════════════════════════════════════
+async function testConnection() {
+  const cfg = getCfg();
+  if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أدخل البيانات أولاً','error');return;}
+  addLog('[...] يختبر الاتصال بـ GitHub...');
+  try {
+    const res = await fetch(GH_API+'/repos/'+cfg.user+'/'+cfg.repo, {
+      headers:{Authorization:'token '+cfg.token, Accept:'application/vnd.github.v3+json'}
+    });
+    if(res.ok) {
+      const d = await res.json();
+      addLog('[OK] الاتصال ناجح! المستودع: '+d.full_name,'success');
+      document.getElementById('btn-init').disabled = false;
+    } else {
+      const e = await res.json();
+      addLog('[X] فشل: '+res.status+' — '+(e.message||'خطأ'),'error');
+    }
+  } catch(e) { addLog('[X] خطأ في الشبكة: '+e.message,'error'); }
+}
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -377,8 +403,8 @@ function getCfg() {
 }
 
 async function ghGet(t,u,r,p) {
-  const res = await fetch(WORKER+'/repos/'+u+'/'+r+'/contents/'+p, {
-    headers: {Authorization:'token '+t, Accept:'application/vnd.github.v3+json'}
+  const res = await fetch(GH_API+'/repos/'+u+'/'+r+'/contents/'+p, {
+    headers: {Authorization:'token '+t, Accept:'application/vnd.github.v3+json', 'X-GitHub-Api-Version':'2022-11-28'}
   });
   return res.ok ? res.json() : null;
 }
@@ -386,12 +412,12 @@ async function ghGet(t,u,r,p) {
 async function ghPut(t,u,r,p,c,m,sha=null) {
   const b = {message:m, content:btoa(unescape(encodeURIComponent(c)))};
   if(sha) b.sha = sha;
-  const res = await fetch(WORKER+'/repos/'+u+'/'+r+'/contents/'+p, {
+  const res = await fetch(GH_API+'/repos/'+u+'/'+r+'/contents/'+p, {
     method:'PUT',
-    headers:{Authorization:'token '+t,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'},
+    headers:{Authorization:'token '+t,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json', 'X-GitHub-Api-Version':'2022-11-28'},
     body:JSON.stringify(b)
   });
-  if(!res.ok) { const e = await res.json(); throw new Error(e.message); }
+  if(!res.ok) { const e = await res.json(); throw new Error(JSON.stringify(await res.json().catch(()=>({msg:'HTTP '+res.status})))); }
   return res.json();
 }
 
@@ -654,13 +680,35 @@ function buildPrompt(surahName, sN, aN) {
 }
 
 // ═══════════════════════════════════════════════
+// TEST CONNECTION
+// ═══════════════════════════════════════════════
+async function testConnection() {
+  const cfg = getCfg();
+  if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أدخل البيانات أولاً','error');return;}
+  addLog('[...] يختبر الاتصال بـ GitHub...');
+  try {
+    const res = await fetch(GH_API+'/repos/'+cfg.user+'/'+cfg.repo, {
+      headers:{Authorization:'token '+cfg.token, Accept:'application/vnd.github.v3+json'}
+    });
+    if(res.ok) {
+      const d = await res.json();
+      addLog('[OK] الاتصال ناجح! المستودع: '+d.full_name,'success');
+      document.getElementById('btn-init').disabled = false;
+    } else {
+      const e = await res.json();
+      addLog('[X] فشل: '+res.status+' — '+(e.message||'خطأ'),'error');
+    }
+  } catch(e) { addLog('[X] خطأ في الشبكة: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════
 // INIT REPO
 // ═══════════════════════════════════════════════
 async function initRepo() {
   const cfg = getCfg();
   if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أكمل البيانات أولاً','error');return;}
   addLog('[...] تهيئة الموقع...');
-  document.querySelector('.btn-g').disabled = true;
+  document.getElementById('btn-init').disabled = true;
   try {
     await pubFile(cfg.token,cfg.user,cfg.repo,'index.html',makeHomeHTML([]),'🕌 تهيئة الرئيسية');
     addLog('[OK] index.html','success');
@@ -685,7 +733,7 @@ async function initRepo() {
   } catch(e) {
     addLog('[X] خطأ: '+e.message,'error');
   }
-  document.querySelector('.btn-g').disabled = false;
+  document.getElementById('btn-init').disabled = false;
 }
 
 // ═══════════════════════════════════════════════
@@ -733,7 +781,7 @@ async function generateArticle(sN=null, aN=null) {
     document.getElementById('tab-preview').textContent = '👁️ معاينة ✓';
     document.getElementById('btn-preview').style.display = 'inline-block';
     addLog('[OK] تم توليد: '+preview.title,'success');
-    switchTab('preview');
+    setTimeout(function(){ switchTab('preview'); }, 100);
   } catch(e) {
     addLog('[X] '+e.message,'error');
   }
@@ -754,6 +802,7 @@ async function publishArticle() {
   addLog('[>>>] ينشر: '+preview.title+'...');
 
   try {
+    addLog('[...] يرسل إلى GitHub API...');
     const newList = [...articles.filter(a=>a.slug!==preview.slug), {
       slug:preview.slug, title:preview.title,
       surahName:preview.surahName, surah:preview.surah, ayah:preview.ayah
@@ -769,7 +818,8 @@ async function publishArticle() {
     renderProgress();
     addLog('[OK] نُشر! https://'+cfg.user+'.github.io/'+cfg.repo+'/articles/'+preview.slug+'.html','success');
   } catch(e) {
-    addLog('[X] '+e.message,'error');
+    addLog('[X] نشر فشل: '+e.message,'error');
+    console.error('Publish error:', e);
   }
   document.getElementById('btn-pub').disabled = false;
   document.getElementById('btn-pub').textContent = '🚀 نشر على GitHub Pages';
@@ -821,10 +871,10 @@ async function startBatch() {
         await pubFile(cfg.token,cfg.user,cfg.repo,'index.html',makeHomeHTML(newList),'🏠');
         await pubFile(cfg.token,cfg.user,cfg.repo,'articles.html',makeListHTML(newList),'📚');
         articles = newList;
-        localStorage.setItem('nq-articles', JSON.stringify(articles));
+        try { localStorage.setItem('nq-articles', JSON.stringify(articles)); } catch(e){}
         renderPublished();
         renderProgress();
-        addLog('[OK] نُشر: '+a.title,'success');
+        addLog('[OK] نُشر: '+a.title+' ('+articles.length+' مقال)','success');
       } else {
         addLog('[X] Groq: '+d.error.message,'error');
       }
@@ -890,6 +940,5 @@ function renderProgress() {
 // START
 init();
 </script>
-
-
-</body></html>
+</body>
+</html>
