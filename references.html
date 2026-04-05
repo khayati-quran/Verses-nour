@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>المراجع | نور القرآن</title><style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap');
+:root{--em:#0a3d2e;--em2:#1a5c42;--gold:#b8860b;--gold2:#daa520;--gold3:#f0c040;--parch:#fdf6e3;--parch2:#f5ead0;--lapis:#1a2a5e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Cairo',sans-serif;background:var(--parch);color:#1a0e05;direction:rtl;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%23b8860b' stroke-width='0.5' opacity='0.25'/%3E%3Ccircle cx='30' cy='30' r='15' fill='none' stroke='%23b8860b' stroke-width='0.5' opacity='0.25'/%3E%3C/svg%3E");background-size:60px 60px;}
+.site-header{background:linear-gradient(180deg,var(--em),var(--em2));color:white;border-bottom:3px solid var(--gold);}
+.hborder{height:5px;background:repeating-linear-gradient(90deg,var(--gold) 0,var(--gold) 8px,var(--gold2) 8px,var(--gold2) 16px,var(--gold3) 16px,var(--gold3) 24px,var(--gold2) 24px,var(--gold2) 32px);}
+.htop{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-gem{width:46px;height:46px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4em;background:rgba(184,134,11,0.1);}
+.logo h1{font-family:'Amiri',serif;font-size:1.4em;color:var(--gold3);}
+.logo p{font-size:.72em;opacity:.75;}
+nav a{color:rgba(255,255,255,.85);text-decoration:none;font-size:.84em;padding:5px 12px;border:1px solid rgba(184,134,11,.3);margin-right:4px;}
+nav a:hover{background:rgba(184,134,11,.2);color:var(--gold3);}
+.site-footer{background:var(--em);color:rgba(255,255,255,.7);padding:36px 20px;text-align:center;border-top:3px solid var(--gold);}
+.fayah{font-family:'Amiri',serif;font-size:1.35em;color:var(--gold3);margin-bottom:6px;}
+.wrap{max-width:900px;margin:0 auto;padding:26px 16px;}
+.frame{background:white;border:1px solid var(--gold2);box-shadow:0 0 0 5px var(--parch2),0 0 0 6px var(--gold2),6px 6px 22px rgba(0,0,0,.12);}
+.ornament{background:var(--em);padding:5px;text-align:center;color:var(--gold3);font-size:.8em;letter-spacing:4px;}
+.art-head{background:linear-gradient(160deg,var(--em),var(--em2),#2e8b5e);padding:30px;text-align:center;position:relative;overflow:hidden;}
+.badge{display:inline-block;background:var(--gold);color:var(--em);padding:4px 16px;font-size:.8em;font-weight:700;letter-spacing:2px;margin-bottom:10px;position:relative;z-index:1;}
+.art-title{font-family:'Amiri',serif;font-size:1.8em;color:white;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.3);}
+.art-meta{font-size:.78em;color:rgba(255,255,255,.7);position:relative;z-index:1;margin-top:5px;}
+.art-body{padding:34px 44px;}
+.ayah-box{background:linear-gradient(135deg,var(--parch),var(--parch2));border:2px solid var(--gold2);margin:22px 0;padding:26px;text-align:center;position:relative;}
+.ayah-box::before,.ayah-box::after{content:"&#10087;";position:absolute;top:8px;color:var(--gold2);font-size:1em;}
+.ayah-box::before{right:10px;}.ayah-box::after{left:10px;}
+.ayah-text{font-family:'Amiri Quran',serif;font-size:1.85em;color:var(--em);line-height:2.2;}
+.ayah-ref{font-size:.82em;color:var(--gold);font-weight:600;margin-top:10px;}
+h2{font-family:'Amiri',serif;color:var(--em);font-size:1.22em;margin:26px 0 10px;padding:9px 13px;background:rgba(10,61,46,.07);border-right:4px solid var(--gold);}
+h3{color:var(--em2);margin:15px 0 7px;font-size:1em;}
+p{line-height:2.1;color:#1a0e05;margin-bottom:13px;font-size:1em;}
+.ibra-box{background:linear-gradient(135deg,#fefae0,#fdf2c0);border:2px solid var(--gold);padding:20px;margin:20px 0;position:relative;}
+.ibra-title{color:var(--gold);font-weight:700;font-size:1em;margin-bottom:10px;font-family:'Amiri',serif;}
+.science-box{background:linear-gradient(135deg,#e8f0fe,#e3f2fd);border-right:5px solid var(--lapis);padding:18px;margin:18px 0;}
+.sci-title{color:var(--lapis);font-weight:700;margin-bottom:8px;}
+.cta-box{background:linear-gradient(160deg,var(--em),var(--em2));color:white;padding:26px;margin-top:26px;text-align:center;border:2px solid var(--gold2);}
+.cta-box h3{color:var(--gold3);font-family:'Amiri',serif;font-size:1.2em;margin-bottom:8px;}
+.cta-box p{color:rgba(255,255,255,.9);margin:0;}
+.sharawi-box{margin:26px 0;border:2px solid var(--gold2);}
+.sh-head{background:var(--em);color:white;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.sh-title{font-family:'Amiri',serif;font-size:1.08em;color:var(--gold3);}
+.sh-sub{font-size:.76em;opacity:.75;}
+.sh-body{padding:13px 16px;}
+.yt-btn{display:inline-flex;align-items:center;gap:7px;background:#FF0000;color:white;padding:8px 18px;text-decoration:none;font-size:.87em;font-weight:700;border-radius:3px;}
+.divider{text-align:center;margin:24px 0;color:var(--gold2);font-size:1.2em;letter-spacing:8px;opacity:.65;}
+.nav-art{display:flex;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid var(--gold2);flex-wrap:wrap;gap:8px;}
+.nav-art a{color:var(--em2);text-decoration:none;font-size:.83em;padding:6px 14px;border:1px solid var(--em2);}
+.bc{font-size:.78em;color:var(--gold);margin-bottom:13px;}
+.bc a{color:var(--em2);text-decoration:none;}
+@media(max-width:600px){.art-body{padding:16px 13px;}.htop nav{display:none;}.art-title{font-size:1.35em;}}
+</style><style>.wrap{max-width:900px;margin:0 auto;padding:26px 16px;}.rh{background:linear-gradient(160deg,#0a3d2e,#1a5c42);padding:30px;text-align:center;border:1px solid #daa520;margin-bottom:0;}.rh h1{font-family:'Amiri',serif;font-size:1.85em;color:white;}.rh p{color:rgba(255,255,255,.75);margin-top:5px;}.rb{padding:36px 44px;background:white;border:1px solid #daa520;}.rcat-t{font-family:'Amiri',serif;font-size:1.18em;color:#0a3d2e;border-right:4px solid #b8860b;padding:7px 13px;background:rgba(10,61,46,.06);margin-bottom:14px;margin-top:26px;}.ri{display:flex;gap:13px;padding:13px;border-bottom:1px solid #f5ead0;align-items:flex-start;}.rnum{width:28px;height:28px;background:#b8860b;color:#0a3d2e;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8em;flex-shrink:0;}.ri h4{color:#1a5c42;margin-bottom:3px;font-size:.9em;}.ri .au{color:#b8860b;font-size:.78em;font-weight:600;}.ri p{color:#666;font-size:.81em;line-height:1.8;margin:3px 0 0;}.note{background:#f5ead0;border:1px solid #daa520;padding:16px;margin-top:22px;}.note p{color:#5a4400;font-size:.87em;line-height:1.9;margin:0;}@media(max-width:600px){.rb{padding:16px 13px;}}</style></head><body>
+<header class="site-header"><div class="hborder"></div><div class="htop"><div class="logo"><div class="logo-gem">🕌</div><div><h1>نور القرآن</h1><p>تفسير وعبر للإنسانية</p></div></div><nav><a href="index.html">🏠</a><a href="articles.html">المقالات</a><a href="references.html">المراجع</a><a href="intro.html">عن المشروع</a></nav></div></header>
+<div class="wrap"><div class="rh"><h1>📚 المراجع والمصادر</h1><p>التفسيرات والمصادر المعتمدة في موقع نور القرآن</p></div>
+<div class="rb">
+<div class="rcat-t">📖 كتب التفسير الكلاسيكية</div>
+<div class="ri"><div class="rnum">1</div><div><h4>تفسير ابن كثير</h4><div class="au">الحافظ إسماعيل بن كثير الدمشقي (ت 774هـ)</div><p>تفسير القرآن العظيم &#8212; المرجع الأول في التفسير بالمأثور</p></div></div>
+<div class="ri"><div class="rnum">2</div><div><h4>تفسير الطبري</h4><div class="au">الإمام محمد بن جرير الطبري (ت 310هـ)</div><p>جامع البيان &#8212; أقدم وأشمل تفاسير القرآن الكريم</p></div></div>
+<div class="ri"><div class="rnum">3</div><div><h4>تفسير القرطبي</h4><div class="au">الإمام أبو عبدالله القرطبي (ت 671هـ)</div><p>الجامع لأحكام القرآن &#8212; مرجع في الفقه القرآني</p></div></div>
+<div class="ri"><div class="rnum">4</div><div><h4>تفسير السعدي</h4><div class="au">الشيخ عبدالرحمن السعدي (ت 1376هـ)</div><p>تيسير الكريم الرحمن &#8212; تفسير ميس&#1617;ر بعمق علمي</p></div></div>
+<div class="ri"><div class="rnum">5</div><div><h4>التحرير والتنوير</h4><div class="au">الشيخ الطاهر بن عاشور (ت 1393هـ)</div><p>موسوعة تفسيرية تعنى بالبلاغة والمعاني</p></div></div>
+<div class="rcat-t">🎙&#65039; التفسير المعاصر المرئي</div>
+<div class="ri"><div class="rnum" style="background:#FF0000;color:white">&#9654;</div><div><h4>الشيخ محمد متولي الشعراوي رحمه الله</h4><div class="au">فضيلة الشيخ محمد متولي الشعراوي (1911 &#8212; 1998م)</div><p>أحب المفسرين المعاصرين إلى قلوب الملايين. ي&#1615;ستشهد بخواطره في كل مقال.</p>
+<a href="https://www.youtube.com/@al_sharawi" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:#FF0000;color:white;padding:5px 13px;text-decoration:none;font-size:.8em;margin-top:7px;border-radius:3px;">&#9654; قناة الشعراوي على يوتيوب</a></div></div>
+<div class="note"><p>&#9888;&#65039; <strong>ملاحظة منهجية:</strong> يلتزم هذا الموقع بالتفسيرات الصحيحة المستندة على الأسانيد الثابتة. لا ي&#1615;ذكر في الإعجاز العلمي إلا ما ثبت بشكل قاطع.</p></div>
+</div></div>
+<footer class="site-footer"><div class="hborder" style="margin-bottom:18px"></div><div class="fayah">&#64831; إ&#1616;ن&#1614;&#1617;ا ن&#1614;ح&#1618;ن&#1615; ن&#1614;ز&#1614;&#1617;ل&#1618;ن&#1614;ا الذ&#1616;&#1617;ك&#1618;ر&#1614; و&#1614;إ&#1616;ن&#1614;&#1617;ا ل&#1614;ه&#1615; ل&#1614;ح&#1614;اف&#1616;ظ&#1615;ون&#1614; &#64830;</div><p>سورة الحجر &#8212; الآية 9 | 🕌 موقع نور القرآن الكريم</p></footer></body></html>
