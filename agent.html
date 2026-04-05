@@ -110,9 +110,22 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         </ol>
       </div>
       <div style="margin-bottom:12px">
-        <label class="lbl">🤖 مفتاح Groq API — <span style="color:#1b5e20;font-weight:400">مجاني تماماً — <a href="https://console.groq.com/keys" target="_blank" style="color:#0a3d2e">احصل عليه هنا</a></span></label>
-        <input type="password" id="cfg-groq" class="inp" placeholder="gsk_xxxxxxxxxxxxxxxxxx">
-        <div style="font-size:.76em;color:#888;margin-top:3px;">سجّل في groq.com ← Keys ← Create API Key (مجاني بدون بطاقة بنكية)</div>
+        <label class="lbl">🤖 مفاتيح API — أضف حتى 5 مفاتيح للتبديل التلقائي عند نفاد الحصة</label>
+        <div style="margin-bottom:6px">
+          <select id="cfg-provider" class="sel" onchange="updateProviderHint()" style="margin-bottom:6px">
+            <option value="groq">Groq (llama-3.3-70b) — 100K token/يوم مجاناً</option>
+            <option value="groq2">Groq مفتاح ثانٍ (حساب آخر)</option>
+            <option value="groq3">Groq مفتاح ثالث (حساب آخر)</option>
+            <option value="gemini">Google Gemini (gemini-1.5-flash) — مجاني</option>
+            <option value="openrouter">OpenRouter (mistral-7b) — مجاني</option>
+          </select>
+        </div>
+        <input type="password" id="cfg-groq" class="inp" placeholder="المفتاح الرئيسي — gsk_... أو AIza..." style="margin-bottom:4px">
+        <input type="password" id="cfg-groq2" class="inp" placeholder="مفتاح 2 (اختياري) — عند نفاد الأول" style="margin-bottom:4px">
+        <input type="password" id="cfg-groq3" class="inp" placeholder="مفتاح 3 (اختياري) — عند نفاد الثاني" style="margin-bottom:4px">
+        <div id="provider-hint" style="font-size:.76em;color:#555;margin-top:3px;padding:6px;background:#f5f5f5;border-right:3px solid #b8860b">
+          Groq مجاني: سجّل في <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> — يمكن إنشاء حسابات متعددة بإيميلات مختلفة (Gmail)
+        </div>
       </div>
       <div style="margin-bottom:12px">
         <label class="lbl">👤 اسم المستخدم على GitHub</label>
@@ -438,8 +451,107 @@ function getCfg() {
     token: document.getElementById('cfg-token').value.trim(),
     user: document.getElementById('cfg-user').value.trim(),
     repo: document.getElementById('cfg-repo').value.trim(),
-    groq: document.getElementById('cfg-groq').value.trim()
+    groq: document.getElementById('cfg-groq').value.trim(),
+    groq2: document.getElementById('cfg-groq2') ? document.getElementById('cfg-groq2').value.trim() : '',
+    groq3: document.getElementById('cfg-groq3') ? document.getElementById('cfg-groq3').value.trim() : '',
+    provider: document.getElementById('cfg-provider') ? document.getElementById('cfg-provider').value : 'groq'
   };
+}
+
+function updateProviderHint() {
+  var hints = {
+    'groq': 'Groq مجاني: سجّل في <a href="https://console.groq.com/keys" target="_blank" style="color:#0a3d2e">console.groq.com/keys</a> — يمكن إنشاء حسابات متعددة بإيميلات Gmail مختلفة (100K token/يوم لكل حساب)',
+    'groq2': 'مفتاح Groq ثانٍ من حساب مختلف — نفس الموقع: console.groq.com/keys',
+    'groq3': 'مفتاح Groq ثالث من حساب مختلف — نفس الموقع: console.groq.com/keys',
+    'gemini': 'Gemini مجاني: سجّل في <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#0a3d2e">aistudio.google.com</a> — المفتاح يبدأ بـ AIza...',
+    'openrouter': 'OpenRouter مجاني: سجّل في <a href="https://openrouter.ai/keys" target="_blank" style="color:#0a3d2e">openrouter.ai/keys</a> — نماذج مجانية متعددة'
+  };
+  var sel = document.getElementById('cfg-provider').value;
+  document.getElementById('provider-hint').innerHTML = hints[sel] || hints['groq'];
+}
+
+// Smart API call with automatic key rotation
+var currentKeyIndex = 0;
+var keyExhausted = [false, false, false];
+
+async function callAI(prompt, cfg) {
+  // Get available keys
+  var keys = [cfg.groq, cfg.groq2, cfg.groq3].filter(k => k && k.length > 5);
+  if(keys.length === 0) throw new Error('لا يوجد مفتاح API — أدخل مفتاحاً في الإعداد');
+
+  // Try each key in rotation
+  for(var attempt = 0; attempt < keys.length; attempt++) {
+    var keyIdx = (currentKeyIndex + attempt) % keys.length;
+    var key = keys[keyIdx];
+    var provider = cfg.provider || 'groq';
+    // If key2 or key3, always use groq
+    if(keyIdx > 0) provider = 'groq';
+
+    try {
+      var result = await callProvider(provider, key, prompt);
+      currentKeyIndex = keyIdx; // Remember which key worked
+      return result;
+    } catch(e) {
+      var msg = e.message || '';
+      // Rate limit or quota exceeded - try next key
+      if(msg.includes('rate_limit') || msg.includes('quota') || msg.includes('Rate limit') || msg.includes('429') || msg.includes('TPD')) {
+        addLog('[!] مفتاح ' + (keyIdx+1) + ' نفد — أجرب المفتاح التالي...', 'warn');
+        currentKeyIndex = (keyIdx + 1) % keys.length;
+        continue;
+      }
+      throw e; // Other error - don't retry
+    }
+  }
+  throw new Error('كل المفاتيح نفدت حصتها اليومية — انتظر غداً أو أضف مفاتيح جديدة');
+}
+
+async function callProvider(provider, key, prompt) {
+  if(provider === 'gemini') {
+    // Google Gemini API
+    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        contents: [{parts: [{text: prompt}]}],
+        generationConfig: {maxOutputTokens: 4000, temperature: 0.7}
+      })
+    });
+    var d = await res.json();
+    if(!res.ok) throw new Error((d.error && d.error.message) || 'Gemini HTTP ' + res.status);
+    if(d.error) throw new Error(d.error.message);
+    return d.candidates[0].content.parts[0].text;
+  }
+
+  if(provider === 'openrouter') {
+    // OpenRouter API (free models)
+    var res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key},
+      body: JSON.stringify({
+        model: 'mistralai/mistral-7b-instruct:free',
+        max_tokens: 4000,
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+    var d = await res.json();
+    if(!res.ok) throw new Error((d.error && d.error.message) || 'OpenRouter HTTP ' + res.status);
+    return d.choices[0].message.content;
+  }
+
+  // Default: Groq
+  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key},
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 4000,
+      messages: [{role: 'user', content: prompt}]
+    })
+  });
+  var d = await res.json();
+  if(!res.ok) throw new Error((d.error && d.error.message) || 'Groq HTTP ' + res.status);
+  if(d.error) throw new Error(d.error.message);
+  return d.choices[0].message.content;
 }
 
 async function ghGet(t,u,r,p) {
@@ -922,7 +1034,7 @@ async function initRepo() {
 async function generateArticle(sN=null, aN=null) {
   const cfg = getCfg();
   if(!cfg.token){addLog('[X] أدخل GitHub Token','error');switchTab('config');return;}
-  if(!cfg.groq){addLog('[X] أدخل مفتاح Groq (مجاني من console.groq.com)','error');switchTab('config');return;}
+  if(!cfg.groq && !cfg.groq2 && !cfg.groq3){addLog('[X] أدخل مفتاح API واحداً على الأقل في الإعداد','error');switchTab('config');return;}
   const surahN = sN || parseInt(document.getElementById('sel-surah').value);
   const ayahN = aN || parseInt(document.getElementById('sel-ayah').value);
   const s = SURAHS.find(x=>x.n===surahN);
@@ -932,21 +1044,9 @@ async function generateArticle(sN=null, aN=null) {
   addLog('[AI] يولّد بـ Groq: سورة '+s.name+' آية '+ayahN+'...');
 
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+cfg.groq
-      },
-      body:JSON.stringify({
-        model:'llama-3.3-70b-versatile',
-        max_tokens:4000,
-        messages:[{role:'user',content:buildPrompt(s.name,surahN,ayahN,document.getElementById('sel-lang').value)}]
-      })
-    });
-    const d = await res.json();
-    if(d.error) throw new Error(d.error.message);
-    const text = d.choices[0].message.content;
+    const prompt = buildPrompt(s.name,surahN,ayahN,document.getElementById('sel-lang').value);
+    addLog('[AI] يتصل بـ API...');
+    const text = await callAI(prompt, cfg);
     preview = {
       surah:surahN, ayah:ayahN, surahName:s.name,
       title:'تفسير سورة '+s.name+' — الآية '+ayahN,
@@ -1021,7 +1121,7 @@ async function publishArticle() {
 async function startBatch() {
   const cfg = getCfg();
   if(!cfg.token){addLog('[X] أدخل GitHub Token','error');switchTab('config');return;}
-  if(!cfg.groq){addLog('[X] أدخل مفتاح Groq (مجاني من console.groq.com)','error');switchTab('config');return;}
+  if(!cfg.groq && !cfg.groq2 && !cfg.groq3){addLog('[X] أدخل مفتاح API واحداً على الأقل في الإعداد','error');switchTab('config');return;}
   batchRunning = true;
   document.getElementById('btn-batch').disabled = true;
   document.getElementById('btn-stop').style.display = 'inline-block';
@@ -1039,21 +1139,10 @@ async function startBatch() {
 
     addLog('[~] ['+( done+1)+'/'+count+'] سورة '+s.name+' آية '+ai);
     try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':'Bearer '+cfg.groq
-        },
-        body:JSON.stringify({
-          model:'llama-3.3-70b-versatile',
-          max_tokens:4000,
-          messages:[{role:'user',content:buildPrompt(s.name,si,ai,document.getElementById('batch-lang').value)}]
-        })
-      });
-      const d = await res.json();
-      if(!d.error) {
-        const text = d.choices[0].message.content;
+      try {
+        const bPrompt = buildPrompt(s.name,si,ai,document.getElementById('batch-lang').value);
+        const text = await callAI(bPrompt, cfg);
+        if(text) {
         const a = {surah:si,ayah:ai,surahName:s.name,title:'تفسير سورة '+s.name+' — الآية '+ai,slug:'surah-'+si+'-ayah-'+ai,content:text};
         preview = a;
         const newList = [...articles.filter(x=>x.slug!==a.slug),{slug:a.slug,title:a.title,surahName:a.surahName,surah:a.surah,ayah:a.ayah}].sort((x,y)=>x.surah-y.surah||x.ayah-y.ayah);
@@ -1065,10 +1154,8 @@ async function startBatch() {
         renderPublished();
         renderProgress();
         addLog('[OK] نُشر: '+a.title+' ('+articles.length+' مقال)','success');
-      } else {
-        addLog('[X] Groq: '+d.error.message,'error');
-      }
-    } catch(e) { addLog('[X] خطأ نشر: '+e.message,'error'); }
+        } // end if text
+      } catch(e) { addLog('[X] '+e.message,'error'); if(e.message.includes('كل المفاتيح')) { batchRunning=false; break; } }
     done++; ai++;
     if(batchRunning && done < count) await new Promise(r=>setTimeout(r,delay));
   }
