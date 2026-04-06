@@ -222,12 +222,23 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
 
   <!-- PREVIEW -->
   <div id="tab-preview" class="tab-content">
-    <div id="preview-zone">
-      <div style="text-align:center;padding:40px;color:#888">
-        <div style="font-size:3em;margin-bottom:10px">📄</div>
-        لم يتم توليد مقال بعد
-        <br><button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
+    <div id="preview-empty" class="card" style="text-align:center;padding:40px">
+      <div style="font-size:3em">📄</div>
+      <div style="color:#888;margin-top:10px">لم يتم توليد مقال بعد</div>
+      <button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
+    </div>
+    <div id="preview-content" style="display:none">
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <div id="preview-title" style="font-weight:700;color:#0a3d2e"></div>
+          <div id="preview-chars" style="color:#888;font-size:.8em;margin-top:2px"></div>
+        </div>
+        <div class="row" style="margin:0">
+          <button class="btn-au" id="btn-pub" onclick="publishArticle()">🚀 نشر على GitHub Pages</button>
+          <button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>
+        </div>
       </div>
+      <div class="preview-area" id="preview-body"></div>
     </div>
   </div>
 
@@ -858,25 +869,15 @@ async function generateArticle(sN=null, aN=null) {
       slug:'surah-'+surahN+'-ayah-'+ayahN+(document.getElementById('sel-lang').value!='ar'?'-'+document.getElementById('sel-lang').value:''),
       content:text
     };
-    // Render preview directly into the zone
-    var zone = document.getElementById('preview-zone');
-    zone.innerHTML = 
-      '<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">' +
-        '<div>' +
-          '<div style="font-weight:700;color:#0a3d2e;font-size:1em">' + preview.title + '</div>' +
-          '<div style="color:#888;font-size:.8em;margin-top:2px">' + preview.content.length.toLocaleString() + ' حرف</div>' +
-        '</div>' +
-        '<div class="row" style="margin:0">' +
-          '<button class="btn-au" id="btn-pub" onclick="publishArticle()">نشر على GitHub Pages</button>' +
-          '<button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="preview-area" id="preview-body"></div>';
+    document.getElementById('preview-title').textContent = preview.title;
+    document.getElementById('preview-chars').textContent = preview.content.length.toLocaleString() + ' حرف';
     document.getElementById('preview-body').innerHTML = preview.content;
-    document.querySelectorAll('.tab')[2].textContent = 'معاينة (جاهز)';
+    document.getElementById('preview-empty').style.display = 'none';
+    document.getElementById('preview-content').style.display = 'block';
+    document.getElementById('tab-preview').textContent = '👁️ معاينة ✓';
     document.getElementById('btn-preview').style.display = 'inline-block';
     addLog('[OK] تم توليد: '+preview.title,'success');
-    switchTab('preview');
+    setTimeout(function(){ switchTab('preview'); }, 100);
   } catch(e) {
     addLog('[X] '+e.message,'error');
   }
@@ -892,8 +893,8 @@ async function publishArticle() {
   if(!preview){addLog('[X] لا يوجد مقال','error');return;}
   if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أكمل إعدادات GitHub','error');switchTab('config');return;}
 
-  var pb = document.getElementById('btn-pub');
-  if(pb){ pb.disabled = true; pb.textContent = 'ينشر...'; }
+  document.getElementById('btn-pub').disabled = true;
+  document.getElementById('btn-pub').textContent = '⏳ ينشر...';
   addLog('[>>>] ينشر: '+preview.title+'...');
 
   try {
@@ -916,8 +917,8 @@ async function publishArticle() {
     addLog('[X] نشر فشل: '+e.message,'error');
     console.error('Publish error:', e);
   }
-  var pb2 = document.getElementById('btn-pub');
-  if(pb2){ pb2.disabled = false; pb2.textContent = 'نشر على GitHub Pages'; }
+  document.getElementById('btn-pub').disabled = false;
+  document.getElementById('btn-pub').textContent = '🚀 نشر على GitHub Pages';
 }
 
 // ═══════════════════════════════════════════════
