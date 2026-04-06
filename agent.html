@@ -304,10 +304,13 @@ let logs = [];
 
 
 function sanitizeGeneratedHtml(text) {
-  if(!text) return '';
+  if (!text) return '';
   text = String(text).replace(/```html|```/gi, '').trim();
   text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
-  return text;
+  text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
+  text = text.replace(/<!DOCTYPE[^>]*>/gi, '');
+  text = text.replace(/<\/?(html|head|body|meta|title|link)[^>]*>/gi, '');
+  return text.trim();
 }
 
 function validateGeneratedHtml(text) {
