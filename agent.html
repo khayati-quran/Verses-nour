@@ -85,7 +85,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('config')">⚙️ الإعداد</button>
-  <button class="tab" onclick="switchTab('generate')">✍️ توليد</button>
+  <button class="tab" onclick="switchTab(&quot;generate&quot;)">✍️ توليد</button>
   <button class="tab" onclick="switchTab('preview')" id="tab-preview">👁️ معاينة</button>
   <button class="tab" onclick="switchTab('published')" id="tab-pub">📚 (0)</button>
   <button class="tab" onclick="switchTab('progress')">📊 التقدم</button>
@@ -150,7 +150,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
       <div class="row">
         <button class="btn-g" id="btn-init" onclick="initRepo()">تهيئة الموقع (4 صفحات)</button>
         <button class="btn-o" onclick="testConnection()" style="margin-right:8px">اختبار الاتصال</button>
-        <button class="btn-o" id="btn-next" onclick="switchTab('generate')" style="display:none">التالي ←</button>
+        <button class="btn-o" id="btn-next" onclick="switchTab(&quot;generate&quot;)" style="display:none">التالي ←</button>
       </div>
     </div>
     <div class="card">
@@ -239,7 +239,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
       <div style="text-align:center;padding:40px;color:#888">
         <div style="font-size:3em;margin-bottom:10px">📄</div>
         لم يتم توليد مقال بعد
-        <br><button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
+        <br><button class="btn-g" onclick="switchTab(&quot;generate&quot;)" style="margin-top:14px">← الذهاب للتوليد</button>
       </div>
     </div>
   </div>
@@ -852,7 +852,7 @@ function buildPrompt(surahName, sN, aN, lang) {
 9) اذكر أمثلة واقعية معاصرة من حياة الناس في هذا العصر، لكن من دون مبالغة أو قصص مختلقة بشكل فج.
 10) المطلوب مقال طويل مشوق، موثق، حي، غير ممل.
 
-أخرج HTML داخلي فقط، من دون DOCTYPE أو html أو body أو style أو markdown أو علامات ترميز.
+أخرج HTML داخلي فقط، من دون DOCTYPE أو html أو body أو style أو markdown أو علامات ثلاثية.
 
 البنية المطلوبة بالنص النهائي:
 <div class="ayah-box"><div class="ayah-text">نص الآية بالرسم العثماني الكامل</div><div class="ayah-ref">سورة ${surahName} — الآية ${aN}</div></div>
@@ -877,77 +877,35 @@ function buildPrompt(surahName, sN, aN, lang) {
   }
 
   if (lang === 'fr') {
-    return `Tu es expert en exegese coranique. Redige un article complet ENTIEREMENT EN FRANCAIS sur:
-Sourate: ${surahName} (n ${sN}) - Verset: ${aN}
+    return `Tu es expert en exegese coranique. Redige un article complet ENTIEREMENT EN FRANCAIS sur :
+Sourate : ${surahName} (n ${sN}) - Verset : ${aN}
 
-Regles strictes: (1) Francais uniquement, zero mot etranger (2) Chaque avis attribue a son savant (3) Si l occasion de revelation est inconnue, le dire honnêtement (4) Structure logique et enchaînee
+Regles strictes : (1) Francais uniquement, zero mot etranger (2) Chaque avis attribue a son savant (3) Si l'occasion de revelation est inconnue, le dire honnêtement (4) Structure logique et enchainee.
 
-Structure HTML interne (sans DOCTYPE):
-<div class="ayah-box"><div class="ayah-text">[Texte arabe du verset]</div><div class="ayah-ref">Sourate ${surahName} - Verset ${aN}</div></div>
-<h2>Contexte et occasion de revelation</h2><p>[contexte dans la sourate - occasion si prouvee, sinon le dire clairement]</p>
-<h2>Exegese des savants</h2><p>Ibn Kathir a dit: [...] | Al-Tabari mentionne: [...] | Al-Qurtubi precise: [...] | Al-Saadi explique: [...] | Ibn Achour ajoute: [...]</p>
-<h3>Analyse lexicale et rhetorique</h3><p>[etymologie des mots-cles, figures de style, beaute linguistique]</p>
-<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Reflexion du Sheikh Al-Sharawi</div></div><div class="sh-body"><p>[style direct et chaleureux, exemples concrets de la vie quotidienne, 15-20 lignes]</p></div></div>
-<div class="science-box"><div class="sci-title">Miracle</div><p>[miracle scientifique si prouve - sinon miracle rhetorique ou legislatif]</p></div>
-<h2>Trois niveaux de lecon</h2><div class="ibra-box"><div class="ibra-title">Enseignement fondamental</div><p><strong>Niveau theologique:</strong> [...]</p><p><strong>Niveau psychologique:</strong> [...]</p><p><strong>Niveau civilisationnel:</strong> [...]</p><p><em>Question pour le lecteur: [...]</em></p></div>
-<h2>Application concrete aujourd'hui</h2><p>[3 applications pratiques dans la vie du XXIe siecle]</p>
-<div class="cta-box"><h3>Appel a la reflexion</h3><p>[conclusion s adressant directement au lecteur]</p></div>
-Longueur: 1800 mots minimum. HTML interne uniquement.`;
+Structure HTML interne seulement, sans DOCTYPE :
+<div class="ayah-box"><div class="ayah-text">Texte arabe du verset</div><div class="ayah-ref">Sourate ${surahName} - Verset ${aN}</div></div>
+<h2>Contexte et occasion de revelation</h2><p>Contexte dans la sourate, occasion si prouvee, sinon le dire clairement.</p>
+<h2>Exegese des savants</h2><p>Resume attribue a Ibn Kathir, Al-Tabari, Al-Qurtubi, Al-Saadi et Ibn Achour.</p>
+<h3>Analyse lexicale et rhetorique</h3><p>Etymologie des mots-cles, figures de style, beaute linguistique.</p>
+<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Reflexion du Sheikh Al-Sharawi</div></div><div class="sh-body"><p>Style direct et chaleureux, exemples concrets de la vie quotidienne.</p></div></div>
+<div class="science-box"><div class="sci-title">Miracle</div><p>Scientifique si prouve, sinon rhetorique ou legislatif.</p></div>
+<h2>Trois niveaux de lecon</h2><div class="ibra-box"><div class="ibra-title">Enseignement fondamental</div><p><strong>Niveau theologique :</strong> ...</p><p><strong>Niveau psychologique :</strong> ...</p><p><strong>Niveau civilisationnel :</strong> ...</p><p><em>Question pour le lecteur.</em></p></div>
+<h2>Application concrete aujourd'hui</h2><p>Trois applications pratiques.</p>
+<div class="cta-box"><h3>Appel a la reflexion</h3><p>Conclusion s'adressant directement au lecteur.</p></div>`;
   }
 
   if (lang === 'en') {
-    return `You are a Quranic exegesis specialist. Write a rigorous article ENTIRELY IN ENGLISH about:
-Surah: ${surahName} (n.${sN}) - Verse: ${aN}
-
-Strict rules: (1) English only (2) Attribute every opinion to its scholar (3) Never fabricate - if occasion of revelation unknown, state so (4) Logical structure
-
-HTML structure (no DOCTYPE):
-<div class="ayah-box"><div class="ayah-text">[Arabic text in Uthmanic script]</div><div class="ayah-ref">Surah ${surahName} - Verse ${aN}</div></div>
-<h2>Context and Occasion of Revelation</h2><p>[context in the surah - occasion if proven, otherwise state unknown]</p>
-<h2>Scholarly Exegesis</h2><p>Ibn Kathir stated: [...] | Al-Tabari mentioned: [...] | Al-Qurtubi noted: [...] | Al-Saadi explained: [...] | Ibn Ashur added: [...]</p>
-<h3>Lexical and Rhetorical Analysis</h3><p>[etymology of key words, rhetorical figures, linguistic beauty]</p>
-<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Sheikh Al-Sharawi Reflection</div></div><div class="sh-body"><p>[warm direct style, everyday examples, 15-20 lines]</p></div></div>
-<div class="science-box"><div class="sci-title">Miracle</div><p>[scientific if proven, otherwise rhetorical or legislative]</p></div>
-<h2>The Lesson - Three Levels</h2><div class="ibra-box"><div class="ibra-title">Core Teaching</div><p><strong>Theological:</strong> [...]</p><p><strong>Psychological:</strong> [...]</p><p><strong>Civilizational:</strong> [...]</p><p><em>Reflection: [deep question for the reader]</em></p></div>
-<h2>Practical Application Today</h2><p>[3 concrete applications in 21st century life]</p>
-<div class="cta-box"><h3>Call to Reflection</h3><p>[conclusion addressing reader directly]</p></div>
-Minimum 1800 words. Internal HTML only.`;
+    return `You are a Quranic exegesis specialist. Write a rigorous article ENTIRELY IN ENGLISH about Surah ${surahName}, verse ${aN}.
+Internal HTML only. Include context, scholarly exegesis, lexical analysis, Al-Sharawi reflection, miracle section, three-level lesson, practical application, and a reflective conclusion.`;
   }
 
   if (lang === 'tr') {
-    return `Kuran tefsiri uzmanisın. YALNIZCA TURKCE kapsamli makale yaz:
-Sure: ${surahName} (No.${sN}) - Ayet: ${aN}
-
-Kurallar: (1) Sadece Turkce (2) Her gorusu alimini belirterek aktar (3) Bilgi uydurma (4) Mantikli yapi
-
-<div class="ayah-box"><div class="ayah-text">[Arapca metin Osmanlı yazisiyla]</div><div class="ayah-ref">Sure ${surahName} - Ayet ${aN}</div></div>
-<h2>Baglam ve Inis Sebebi</h2><p>[bilinmiyorsa durustce belirt]</p>
-<h2>Alimlerin Tefsiri</h2><p>Ibn Kesir: [...] | Taberi: [...] | Kurtubi: [...] | Saadi: [...] | Ibn Asur: [...]</p>
-<h3>Kelime ve Belagat Analizi</h3><p>[etimoloji, edebi sanatlar]</p>
-<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Seyh Sarawi Dusuncesi</div></div><div class="sh-body"><p>[sicak samimi uslup, gunluk hayattan ornekler, 15-20 satir]</p></div></div>
-<div class="science-box"><div class="sci-title">Mucize</div><p>[bilimsel ise kanitla, degilse belagat mucizesi]</p></div>
-<h2>Uc Seviyede Ders</h2><div class="ibra-box"><div class="ibra-title">Temel Ogreti</div><p><strong>Akidevi:</strong> [...]</p><p><strong>Psikolojik:</strong> [...]</p><p><strong>Medeniyet:</strong> [...]</p><p><em>Dusunce sorusu: [...]</em></p></div>
-<h2>Bugun Pratik Uygulama</h2><p>[21. yuzyilda 3 somut uygulama]</p>
-<div class="cta-box"><h3>Tefekkur Cagri</h3><p>[okuyucuya hitap eden sonuc]</p></div>
-En az 1800 kelime. Yalnizca ic HTML.`;
+    return `Kuran tefsiri uzmanisin. Sadece Turkce yaz. Sure ${surahName}, ayet ${aN} icin kapsamli bir yazi hazirla. Ic HTML olarak baglam, tefsir, belagat, Sarawi dusuncesi, mucize, uc seviyeli ders, pratik uygulama ve sonuc ver.`;
   }
 
-  return `Anda pakar tafsir Al-Quran. Tulis artikel ilmiah BAHASA INDONESIA SAJA tentang:
-Surah: ${surahName} (No.${sN}) - Ayat: ${aN}
-
-Aturan: (1) Bahasa Indonesia saja (2) Setiap pendapat dikaitkan ulamannya (3) Jangan mengarang (4) Struktur logis
-
-<div class="ayah-box"><div class="ayah-text">[Teks Arab Utsmani]</div><div class="ayah-ref">Surah ${surahName} - Ayat ${aN}</div></div>
-<h2>Konteks dan Asbabun Nuzul</h2><p>[jika tidak diketahui, nyatakan jujur]</p>
-<h2>Tafsir Para Ulama</h2><p>Ibnu Katsir: [...] | Al-Thabari: [...] | Al-Qurthubi: [...] | Al-Saadi: [...] | Ibnu Asyur: [...]</p>
-<h3>Analisis Kosakata dan Balaghah</h3><p>[etimologi, majas]</p>
-<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Renungan Syekh Al-Syarawi</div></div><div class="sh-body"><p>[gaya hangat langsung, contoh kehidupan sehari-hari, 15-20 baris]</p></div></div>
-<div class="science-box"><div class="sci-title">Kemukjizatan</div><p>[ilmiah jika terbukti, jika tidak: balaghah atau tasyrii]</p></div>
-<h2>Tiga Tingkat Pelajaran</h2><div class="ibra-box"><div class="ibra-title">Inti Pelajaran</div><p><strong>Akidah:</strong> [...]</p><p><strong>Psikologi:</strong> [...]</p><p><strong>Peradaban:</strong> [...]</p><p><em>Perenungan: [pertanyaan untuk pembaca]</em></p></div>
-<h2>Penerapan Praktis Hari Ini</h2><p>[3 penerapan konkret abad ke-21]</p>
-<div class="cta-box"><h3>Seruan Refleksi</h3><p>[penutup kepada pembaca]</p></div>
-Minimal 1800 kata. HTML internal saja.`;
+  return `Anda pakar tafsir Al-Quran. Tulis artikel Bahasa Indonesia saja tentang Surah ${surahName} ayat ${aN}. Berikan HTML internal dengan konteks, tafsir ulama, analisis bahasa, renungan Al-Syarawi, kemukjizatan, tiga tingkat pelajaran, penerapan praktis, dan penutup.`;
 }
+
 
 // ═══════════════════════════════════════════════
 // TEST CONNECTION
@@ -1069,7 +1027,7 @@ async function generateArticle(sN=null, aN=null) {
         '</div>' +
         '<div class="row" style="margin:0">' +
           '<button class="btn-au" id="btn-pub" onclick="publishArticle()">نشر على GitHub Pages</button>' +
-          '<button class="btn-o" onclick="switchTab(\'generate\')">← توليد آخر</button>' +
+          '<button class="btn-o" onclick="switchTab(&quot;generate&quot;)">← توليد آخر</button>' +
         '</div>' +
       '</div>' +
       '<div class="preview-area" id="preview-body"></div>';
@@ -1160,7 +1118,7 @@ async function startBatch() {
         renderProgress();
         addLog('[OK] نُشر: '+a.title+' ('+articles.length+' مقال)','success');
         } // end if text
-      } catch(e) { addLog('[X] '+e.message,'error'); if(e.message.includes('كل المفاتيح')) { batchRunning=false; break; } }
+    } catch(e) { addLog('[X] '+e.message,'error'); if(e.message.includes('كل المفاتيح')) { batchRunning=false; break; } }
     done++; ai++;
     if(batchRunning && done < count) await new Promise(r=>setTimeout(r,delay));
   }
