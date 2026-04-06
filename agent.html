@@ -85,7 +85,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('config')">⚙️ الإعداد</button>
-  <button class="tab" onclick="switchTab(&quot;generate&quot;)">✍️ توليد</button>
+  <button class="tab" onclick="switchTab('generate')">✍️ توليد</button>
   <button class="tab" onclick="switchTab('preview')" id="tab-preview">👁️ معاينة</button>
   <button class="tab" onclick="switchTab('published')" id="tab-pub">📚 (0)</button>
   <button class="tab" onclick="switchTab('progress')">📊 التقدم</button>
@@ -110,22 +110,9 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         </ol>
       </div>
       <div style="margin-bottom:12px">
-        <label class="lbl">🤖 مفاتيح API — أضف حتى 5 مفاتيح للتبديل التلقائي عند نفاد الحصة</label>
-        <div style="margin-bottom:6px">
-          <select id="cfg-provider" class="sel" onchange="updateProviderHint()" style="margin-bottom:6px">
-            <option value="groq">Groq (llama-3.3-70b) — 100K token/يوم مجاناً</option>
-            <option value="groq2">Groq مفتاح ثانٍ (حساب آخر)</option>
-            <option value="groq3">Groq مفتاح ثالث (حساب آخر)</option>
-            <option value="gemini">Google Gemini (gemini-1.5-flash) — مجاني</option>
-            <option value="openrouter">OpenRouter (mistral-7b) — مجاني</option>
-          </select>
-        </div>
-        <input type="password" id="cfg-groq" class="inp" placeholder="المفتاح الرئيسي — gsk_... أو AIza..." style="margin-bottom:4px">
-        <input type="password" id="cfg-groq2" class="inp" placeholder="مفتاح 2 (اختياري) — عند نفاد الأول" style="margin-bottom:4px">
-        <input type="password" id="cfg-groq3" class="inp" placeholder="مفتاح 3 (اختياري) — عند نفاد الثاني" style="margin-bottom:4px">
-        <div id="provider-hint" style="font-size:.76em;color:#555;margin-top:3px;padding:6px;background:#f5f5f5;border-right:3px solid #b8860b">
-          Groq مجاني: سجّل في <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> — يمكن إنشاء حسابات متعددة بإيميلات مختلفة (Gmail)
-        </div>
+        <label class="lbl">🤖 مفتاح Groq API — <span style="color:#1b5e20;font-weight:400">مجاني تماماً — <a href="https://console.groq.com/keys" target="_blank" style="color:#0a3d2e">احصل عليه هنا</a></span></label>
+        <input type="password" id="cfg-groq" class="inp" placeholder="gsk_xxxxxxxxxxxxxxxxxx">
+        <div style="font-size:.76em;color:#888;margin-top:3px;">سجّل في groq.com ← Keys ← Create API Key (مجاني بدون بطاقة بنكية)</div>
       </div>
       <div style="margin-bottom:12px">
         <label class="lbl">👤 اسم المستخدم على GitHub</label>
@@ -150,7 +137,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
       <div class="row">
         <button class="btn-g" id="btn-init" onclick="initRepo()">تهيئة الموقع (4 صفحات)</button>
         <button class="btn-o" onclick="testConnection()" style="margin-right:8px">اختبار الاتصال</button>
-        <button class="btn-o" id="btn-next" onclick="switchTab(&quot;generate&quot;)" style="display:none">التالي ←</button>
+        <button class="btn-o" id="btn-next" onclick="switchTab('generate')" style="display:none">التالي ←</button>
       </div>
     </div>
     <div class="card">
@@ -239,7 +226,7 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
       <div style="text-align:center;padding:40px;color:#888">
         <div style="font-size:3em;margin-bottom:10px">📄</div>
         لم يتم توليد مقال بعد
-        <br><button class="btn-g" onclick="switchTab(&quot;generate&quot;)" style="margin-top:14px">← الذهاب للتوليد</button>
+        <br><button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
       </div>
     </div>
   </div>
@@ -301,53 +288,6 @@ try { articles = JSON.parse(localStorage.getItem('nq-articles') || '[]'); } catc
 let preview = null;
 let batchRunning = false;
 let logs = [];
-
-
-function sanitizeGeneratedHtml(text) {
-  if(!text) return '';
-  text = String(text).replace(/```html|```/gi, '').trim();
-  text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<!DOCTYPE[^>]*>/gi, '');
-  text = text.replace(/<html[\s\S]*?<body[^>]*>/gi, '');
-  text = text.replace(/<\/body>[\s\S]*$/gi, '');
-  return text.trim();
-}
-
-function extractVisibleText(html) {
-  var visible = String(html || '');
-  visible = visible.replace(/<style[\s\S]*?<\/style>/gi, ' ');
-  visible = visible.replace(/<script[\s\S]*?<\/script>/gi, ' ');
-  visible = visible.replace(/<[^>]+>/g, ' ');
-  visible = visible.replace(/&nbsp;|&#160;/gi, ' ');
-  visible = visible.replace(/&[a-zA-Z0-9#]+;/g, ' ');
-  visible = visible.replace(/\s+/g, ' ').trim();
-  return visible;
-}
-
-function validateGeneratedHtml(text) {
-  var issues = [];
-  var visible = extractVisibleText(text);
-  if(!visible || visible.trim().length < 900) issues.push('النص قصير جداً');
-  if(/[A-Za-z\u00C0-\u024F\u4E00-\u9FFF\u3040-\u30FF]/.test(visible)) issues.push('يحتوي النص الظاهر على حروف أو كلمات أجنبية');
-  if(/\[[^\]]{1,80}\]/.test(visible)) issues.push('توجد بقايا placeholders أو تعليمات');
-  if(/اختم بخاتمة|اذكر الثابت فقط|اكتب المحتوى النهائي|اخرج HTML|لا تكتب|المطلوب|قواعد إلزامية/.test(visible)) issues.push('تسربت تعليمات الـ prompt إلى المقال');
-  return issues;
-}
-
-async function generateValidatedArticle(prompt, cfg) {
-  var attempts = 0;
-  var currentPrompt = prompt;
-  while(attempts < 3) {
-    attempts++;
-    var text = await callAI(currentPrompt, cfg);
-    text = sanitizeGeneratedHtml(text);
-    var issues = validateGeneratedHtml(text);
-    if(issues.length === 0) return text;
-    addLog('[!] إعادة توليد بسبب: ' + issues.join('، '), 'warn');
-    currentPrompt = prompt + "\n\nتصحيح إجباري للمحاولة الجديدة: أعد كتابة المقال كاملاً من الصفر، بالعربية فقط، ومنعاً باتاً تسرب التعليمات أو الأقواس المربعة أو أي كلمة أجنبية.";
-  }
-  throw new Error('فشل التوليد النظيف بعد 3 محاولات');
-}
 
 // ═══════════════════════════════════════════════
 // TEST CONNECTION
@@ -498,107 +438,8 @@ function getCfg() {
     token: document.getElementById('cfg-token').value.trim(),
     user: document.getElementById('cfg-user').value.trim(),
     repo: document.getElementById('cfg-repo').value.trim(),
-    groq: document.getElementById('cfg-groq').value.trim(),
-    groq2: document.getElementById('cfg-groq2') ? document.getElementById('cfg-groq2').value.trim() : '',
-    groq3: document.getElementById('cfg-groq3') ? document.getElementById('cfg-groq3').value.trim() : '',
-    provider: document.getElementById('cfg-provider') ? document.getElementById('cfg-provider').value : 'groq'
+    groq: document.getElementById('cfg-groq').value.trim()
   };
-}
-
-function updateProviderHint() {
-  var hints = {
-    'groq': 'Groq مجاني: سجّل في <a href="https://console.groq.com/keys" target="_blank" style="color:#0a3d2e">console.groq.com/keys</a> — يمكن إنشاء حسابات متعددة بإيميلات Gmail مختلفة (100K token/يوم لكل حساب)',
-    'groq2': 'مفتاح Groq ثانٍ من حساب مختلف — نفس الموقع: console.groq.com/keys',
-    'groq3': 'مفتاح Groq ثالث من حساب مختلف — نفس الموقع: console.groq.com/keys',
-    'gemini': 'Gemini مجاني: سجّل في <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#0a3d2e">aistudio.google.com</a> — المفتاح يبدأ بـ AIza...',
-    'openrouter': 'OpenRouter مجاني: سجّل في <a href="https://openrouter.ai/keys" target="_blank" style="color:#0a3d2e">openrouter.ai/keys</a> — نماذج مجانية متعددة'
-  };
-  var sel = document.getElementById('cfg-provider').value;
-  document.getElementById('provider-hint').innerHTML = hints[sel] || hints['groq'];
-}
-
-// Smart API call with automatic key rotation
-var currentKeyIndex = 0;
-var keyExhausted = [false, false, false];
-
-async function callAI(prompt, cfg) {
-  // Get available keys
-  var keys = [cfg.groq, cfg.groq2, cfg.groq3].filter(k => k && k.length > 5);
-  if(keys.length === 0) throw new Error('لا يوجد مفتاح API — أدخل مفتاحاً في الإعداد');
-
-  // Try each key in rotation
-  for(var attempt = 0; attempt < keys.length; attempt++) {
-    var keyIdx = (currentKeyIndex + attempt) % keys.length;
-    var key = keys[keyIdx];
-    var provider = cfg.provider || 'groq';
-    // If key2 or key3, always use groq
-    if(keyIdx > 0) provider = 'groq';
-
-    try {
-      var result = await callProvider(provider, key, prompt);
-      currentKeyIndex = keyIdx; // Remember which key worked
-      return result;
-    } catch(e) {
-      var msg = e.message || '';
-      // Rate limit or quota exceeded - try next key
-      if(msg.includes('rate_limit') || msg.includes('quota') || msg.includes('Rate limit') || msg.includes('429') || msg.includes('TPD')) {
-        addLog('[!] مفتاح ' + (keyIdx+1) + ' نفد — أجرب المفتاح التالي...', 'warn');
-        currentKeyIndex = (keyIdx + 1) % keys.length;
-        continue;
-      }
-      throw e; // Other error - don't retry
-    }
-  }
-  throw new Error('كل المفاتيح نفدت حصتها اليومية — انتظر غداً أو أضف مفاتيح جديدة');
-}
-
-async function callProvider(provider, key, prompt) {
-  if(provider === 'gemini') {
-    // Google Gemini API
-    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        contents: [{parts: [{text: prompt}]}],
-        generationConfig: {maxOutputTokens: 4000, temperature: 0.7}
-      })
-    });
-    var d = await res.json();
-    if(!res.ok) throw new Error((d.error && d.error.message) || 'Gemini HTTP ' + res.status);
-    if(d.error) throw new Error(d.error.message);
-    return d.candidates[0].content.parts[0].text;
-  }
-
-  if(provider === 'openrouter') {
-    // OpenRouter API (free models)
-    var res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key},
-      body: JSON.stringify({
-        model: 'mistralai/mistral-7b-instruct:free',
-        max_tokens: 4000,
-        messages: [{role: 'user', content: prompt}]
-      })
-    });
-    var d = await res.json();
-    if(!res.ok) throw new Error((d.error && d.error.message) || 'OpenRouter HTTP ' + res.status);
-    return d.choices[0].message.content;
-  }
-
-  // Default: Groq
-  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key},
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      max_tokens: 4000,
-      messages: [{role: 'user', content: prompt}]
-    })
-  });
-  var d = await res.json();
-  if(!res.ok) throw new Error((d.error && d.error.message) || 'Groq HTTP ' + res.status);
-  if(d.error) throw new Error(d.error.message);
-  return d.choices[0].message.content;
 }
 
 async function ghGet(t,u,r,p) {
@@ -847,80 +688,53 @@ ${siteFooter()}</body></html>`;
 // ═══════════════════════════════════════════════
 // AI PROMPT
 // ═══════════════════════════════════════════════
-function buildPrompt(surahName, sN, aN, lang) {
-  lang = lang || 'ar';
+function buildPrompt(surahName, sN, aN, lang='ar') {
+  const langInstructions = {
+    'ar': 'اكتب باللغة العربية الفصحى السلسة',
+    'fr': 'Écris entièrement en français fluide et élégant. Traduis les termes arabes entre parenthèses.',
+    'en': 'Write entirely in clear English. Transliterate Arabic terms with translation in brackets.',
+    'tr': 'Tamamen akıcı Türkçe yaz. Arapça terimleri parantez içinde açıkla.',
+    'id': 'Tulis seluruhnya dalam Bahasa Indonesia yang jelas dan lancar.'
+  };
+  const langSlug = lang !== 'ar' ? ' ['+lang+']' : '';
+  const langDir = lang === 'ar' ? 'direction:rtl' : 'direction:ltr';
+  return `${lang !== 'ar' ? langInstructions[lang]+'. You are a scholarly expert in Quranic interpretation. Write a comprehensive article about:' : 'أنت عالم إسلامي رباني متخصص في التفسير وعلوم القرآن والإعجاز. أعدّ مقالاً تفسيرياً شاملاً لـ:'}
+📖 سورة: ${surahName} (رقم ${sN}) | الآية: ${aN}
 
-  if (lang === 'ar') {
-    return `أنت محرر تفسير عربي رفيع المستوى، تجمع بين سلامة العقيدة، ودقة التوثيق، وجمال الأسلوب، والقدرة على جذب القارئ دون حشو.
+🔴 قواعد عقدية لا تُخالَف:
+• لا تقل أبداً "نبدأ بالله" — الصواب دائماً "نبدأ باسم الله" (الباء للاستعانة)
+• الله سبحانه منزّه عن التشبيه والحلول
+• كل قول يُنسب لصاحبه من المفسرين
+• لا تذكر إعجازاً علمياً إلا ما ثبت قطعاً
 
-المطلوب: كتابة مقال تفسيري عربي كامل عن سورة ${surahName} الآية ${aN}.
+اكتب HTML داخلي فقط (بدون DOCTYPE/html/body/style) بهذه الأقسام:
 
-قواعد إلزامية لا يجوز مخالفتها:
-1) العربية فقط. ممنوع أي كلمة أو حرف أجنبي أو مترجم آلي أو مزج لغات.
-2) لا تكتب تعليمات، ولا عناوين تفسيرية بين أقواس مربعة، ولا تكرر ألفاظ الطلب مثل: اذكر، بين، استخرج، اختم.
-3) اكتب المحتوى النهائي فقط، الجاهز للنشر، بصياغة طبيعية.
-4) لا تخترع سبب نزول. إذا لم يثبت، فاكتب بوضوح: لم يثبت في هذه الآية سبب نزول خاص فيما اشتهر من كتب التفسير.
-5) لا تنسب قولاً لعالم إلا بصياغة موجزة صحيحة. تجنب الإطالة في قال فلان قال فلان. المطلوب خلاصة نافعة منسوبة.
-6) خاطرة الشعراوي تكون بروحه المعروفة: قريبة، حيّة، تمس القلب، وفيها مثال من الحياة، لكن من دون ادعاء نص حرفي غير موثق.
-7) الإعجاز العلمي لا يذكر إلا إذا كان مشهوراً قوياً ومنضبطاً. إن لم يوجد، فاذكر وجهاً من الإعجاز البياني أو التشريعي أو التربوي بدل التكلف.
-8) العبرة الثلاثية جزء أساسي وثابت، ويجب أن تكون خاصة بهذه الآية، لا عامة ولا مكررة.
-9) اذكر أمثلة واقعية معاصرة من حياة الناس في هذا العصر، لكن من دون مبالغة أو قصص مختلقة بشكل فج.
-10) المطلوب مقال طويل مشوق، موثق، حي، غير ممل.
+<div class="ayah-box"><div class="ayah-text">[نص الآية كاملاً بالرسم العثماني]</div><div class="ayah-ref">سورة ${surahName} — الآية ${aN}</div></div>
 
-أخرج HTML داخلي فقط، من دون DOCTYPE أو html أو body أو style أو markdown أو علامات ثلاثية.
+<h2>📍 سياق الآية وسبب النزول</h2>
+<p>[السياق التاريخي الدقيق وسبب النزول إن ثبت بسند صحيح]</p>
 
-البنية المطلوبة بالنص النهائي:
-<div class="ayah-box"><div class="ayah-text">نص الآية بالرسم العثماني الكامل</div><div class="ayah-ref">سورة ${surahName} — الآية ${aN}</div></div>
-<h2>📍 مدخل يمسّ الإنسان</h2><p>افتتاح قوي يمسّ القارئ ويقوده إلى الآية.</p>
-<h2>📚 المعنى والتفسير الموثق</h2><p>شرح واضح منضبط مع خلاصة من ابن كثير والطبري والقرطبي والسعدي وابن عاشور عند الحاجة.</p>
-<h2>🕰️ سبب النزول والسياق التاريخي</h2><p>اذكر الثابت فقط، وإن لم يثبت سبب خاص فقل ذلك، ثم اربط الآية بسياق السورة والزمن المكي أو المدني إن صح.</p>
-<h2>🔤 المفردات والبلاغة</h2><p>بيان الكلمات المحورية وسر اختيارها وجمال التعبير القرآني.</p>
-<h2>🎙️ لمسة الشعراوي</h2><p>فقرة بأسلوب حي قريب من روح الشعراوي، لا على أنها اقتباس حرفي إلا إذا كنت متيقناً.</p>
-<h2>🔬 الإعجاز</h2><p>إن وجد إعجاز علمي منضبط فاذكره بإيجاز، وإلا فاذكر إعجازاً بيانياً أو تشريعياً أو نفسياً صادقاً.</p>
-<h2>💎 العبرة العميقة — ثلاثة مستويات</h2><div class="ibra-box"><div class="ibra-title">💎 العبرة الجوهرية:</div><p><strong>① المستوى العقدي:</strong> ماذا تبني هذه الآية في صلة العبد بربه؟</p><p><strong>② المستوى النفسي:</strong> كيف تعالج هذه الآية قلب الإنسان وقلقه وكبرياءه أو ضعفه؟</p><p><strong>③ المستوى الحضاري:</strong> كيف يتغير المجتمع لو عاشت الأمة هذا المعنى حقاً؟</p><p><em>ثم اختم بسؤال عميق واحد لا ينسى.</em></p></div>
-<p>أضف بعد العبرة مثالاً واقعياً معاصراً أو تجربة إنسانية ممكنة الوقوع، مرتبطة بالآية مباشرة.</p>
-<h2>🌍 التطبيق في حياتنا اليوم</h2><p>ثلاثة تطبيقات عملية واضحة قابلة للتنفيذ.</p>
-<h2>🕌 القرآن رسالة لك أنت</h2><div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>خاتمة دافئة قوية تخاطب القارئ مباشرة بلا وعظ ثقيل.</p></div>
+<h2>📚 التفسير الشامل — أقوال العلماء</h2>
+<p>[تفسير وافٍ بأقوال ابن كثير والطبري والقرطبي والسعدي وابن عاشور — كل قول منسوب لصاحبه]</p>
+<h3>🔤 المفردات والبلاغة</h3>
+<p>[اشتقاق الكلمات وسرّ اختيارها والصور البلاغية]</p>
+<h3>🎙️ خاطرة الشيخ الشعراوي رحمه الله</h3>
+<p>[لفتة إيمانية مميزة بأسلوب الشعراوي — يُعرف بأسلوبه الشعبي العميق الذي يلامس القلوب]</p>
 
-تنبيهات أخيرة:
-- لا تكتب أي نص أجنبي.
-- لا تترك فراغات أو عبارات مثل [قوله] أو [مثال].
-- لا تكرر نفس الجملة في أكثر من موضع.
-- لا تدخل تعليماتك داخل المقال.
-- اكتب النص النهائي الجاهز للنشر فقط.
-- الطول المستهدف: بين 1200 و1800 كلمة تقريباً، مع بقاء الأسلوب مشوقاً.`;
-  }
+<div class="science-box"><div class="sci-title">🔬 الإعجاز العلمي — القرآن يثبت نفسه</div><p>[ربط الآية بالعلم الحديث: الاكتشاف + تاريخه + كيف سبقه القرآن]</p></div>
 
-  if (lang === 'fr') {
-    return `Tu es expert en exegese coranique. Redige un article complet ENTIEREMENT EN FRANCAIS sur :
-Sourate : ${surahName} (n ${sN}) - Verset : ${aN}
+<h2>💎 العبرة العميقة — ثلاثة مستويات</h2>
+<div class="ibra-box"><div class="ibra-title">💎 العبرة الجوهرية:</div><p><strong>① المستوى العقدي:</strong> [ماذا تُعلّمنا عن الله والإنسان؟]</p><p><strong>② المستوى النفسي:</strong> [كيف تُغيّر نظرة الإنسان لنفسه؟]</p><p><strong>③ المستوى الحضاري:</strong> [ماذا لو طبّقت البشرية هذا المعنى؟]</p><p><em>[اختم بسؤال عميق يبقى في الذهن]</em></p></div>
+<p>[توسّع بأمثلة واقعية وتاريخية]</p>
 
-Regles strictes : (1) Francais uniquement, zero mot etranger (2) Chaque avis attribue a son savant (3) Si l'occasion de revelation est inconnue, le dire honnêtement (4) Structure logique et enchainee.
+<h2>🌍 التطبيق في حياتنا اليوم</h2>
+<p>[تطبيقات عملية ملموسة في القرن 21]</p>
 
-Structure HTML interne seulement, sans DOCTYPE :
-<div class="ayah-box"><div class="ayah-text">Texte arabe du verset</div><div class="ayah-ref">Sourate ${surahName} - Verset ${aN}</div></div>
-<h2>Contexte et occasion de revelation</h2><p>Contexte dans la sourate, occasion si prouvee, sinon le dire clairement.</p>
-<h2>Exegese des savants</h2><p>Resume attribue a Ibn Kathir, Al-Tabari, Al-Qurtubi, Al-Saadi et Ibn Achour.</p>
-<h3>Analyse lexicale et rhetorique</h3><p>Etymologie des mots-cles, figures de style, beaute linguistique.</p>
-<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Reflexion du Sheikh Al-Sharawi</div></div><div class="sh-body"><p>Style direct et chaleureux, exemples concrets de la vie quotidienne.</p></div></div>
-<div class="science-box"><div class="sci-title">Miracle</div><p>Scientifique si prouve, sinon rhetorique ou legislatif.</p></div>
-<h2>Trois niveaux de lecon</h2><div class="ibra-box"><div class="ibra-title">Enseignement fondamental</div><p><strong>Niveau theologique :</strong> ...</p><p><strong>Niveau psychologique :</strong> ...</p><p><strong>Niveau civilisationnel :</strong> ...</p><p><em>Question pour le lecteur.</em></p></div>
-<h2>Application concrete aujourd'hui</h2><p>Trois applications pratiques.</p>
-<div class="cta-box"><h3>Appel a la reflexion</h3><p>Conclusion s'adressant directement au lecteur.</p></div>`;
-  }
+<h2>🕌 القرآن رسالة لك أنت</h2>
+<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>[خاتمة تخاطب القارئ مباشرة]</p></div>
 
-  if (lang === 'en') {
-    return `You are a Quranic exegesis specialist. Write a rigorous article ENTIRELY IN ENGLISH about Surah ${surahName}, verse ${aN}.
-Internal HTML only. Include context, scholarly exegesis, lexical analysis, Al-Sharawi reflection, miracle section, three-level lesson, practical application, and a reflective conclusion.`;
-  }
-
-  if (lang === 'tr') {
-    return `Kuran tefsiri uzmanisin. Sadece Turkce yaz. Sure ${surahName}, ayet ${aN} icin kapsamli bir yazi hazirla. Ic HTML olarak baglam, tefsir, belagat, Sarawi dusuncesi, mucize, uc seviyeli ders, pratik uygulama ve sonuc ver.`;
-  }
-
-  return `Anda pakar tafsir Al-Quran. Tulis artikel Bahasa Indonesia saja tentang Surah ${surahName} ayat ${aN}. Berikan HTML internal dengan konteks, tafsir ulama, analisis bahasa, renungan Al-Syarawi, kemukjizatan, tiga tingkat pelajaran, penerapan praktis, dan penutup.`;
+الأسلوب: فصيح سلس علمي مؤثر. الطول: 1500+ كلمة. HTML داخلي فقط بدون DOCTYPE.`;
 }
-
 
 // ═══════════════════════════════════════════════
 // TEST CONNECTION
@@ -1013,7 +827,7 @@ async function initRepo() {
 async function generateArticle(sN=null, aN=null) {
   const cfg = getCfg();
   if(!cfg.token){addLog('[X] أدخل GitHub Token','error');switchTab('config');return;}
-  if(!cfg.groq && !cfg.groq2 && !cfg.groq3){addLog('[X] أدخل مفتاح API واحداً على الأقل في الإعداد','error');switchTab('config');return;}
+  if(!cfg.groq){addLog('[X] أدخل مفتاح Groq (مجاني من console.groq.com)','error');switchTab('config');return;}
   const surahN = sN || parseInt(document.getElementById('sel-surah').value);
   const ayahN = aN || parseInt(document.getElementById('sel-ayah').value);
   const s = SURAHS.find(x=>x.n===surahN);
@@ -1023,9 +837,21 @@ async function generateArticle(sN=null, aN=null) {
   addLog('[AI] يولّد بـ Groq: سورة '+s.name+' آية '+ayahN+'...');
 
   try {
-    const prompt = buildPrompt(s.name,surahN,ayahN,document.getElementById('sel-lang').value);
-    addLog('[AI] يتصل بـ API...');
-    const text = await generateValidatedArticle(prompt, cfg);
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+cfg.groq
+      },
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        max_tokens:4000,
+        messages:[{role:'user',content:buildPrompt(s.name,surahN,ayahN,document.getElementById('sel-lang').value)}]
+      })
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+    const text = d.choices[0].message.content;
     preview = {
       surah:surahN, ayah:ayahN, surahName:s.name,
       title:'تفسير سورة '+s.name+' — الآية '+ayahN,
@@ -1042,7 +868,7 @@ async function generateArticle(sN=null, aN=null) {
         '</div>' +
         '<div class="row" style="margin:0">' +
           '<button class="btn-au" id="btn-pub" onclick="publishArticle()">نشر على GitHub Pages</button>' +
-          '<button class="btn-o" onclick="switchTab(&quot;generate&quot;)">← توليد آخر</button>' +
+          '<button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>' +
         '</div>' +
       '</div>' +
       '<div class="preview-area" id="preview-body"></div>';
@@ -1100,7 +926,7 @@ async function publishArticle() {
 async function startBatch() {
   const cfg = getCfg();
   if(!cfg.token){addLog('[X] أدخل GitHub Token','error');switchTab('config');return;}
-  if(!cfg.groq && !cfg.groq2 && !cfg.groq3){addLog('[X] أدخل مفتاح API واحداً على الأقل في الإعداد','error');switchTab('config');return;}
+  if(!cfg.groq){addLog('[X] أدخل مفتاح Groq (مجاني من console.groq.com)','error');switchTab('config');return;}
   batchRunning = true;
   document.getElementById('btn-batch').disabled = true;
   document.getElementById('btn-stop').style.display = 'inline-block';
@@ -1118,9 +944,21 @@ async function startBatch() {
 
     addLog('[~] ['+( done+1)+'/'+count+'] سورة '+s.name+' آية '+ai);
     try {
-        const bPrompt = buildPrompt(s.name,si,ai,document.getElementById('batch-lang').value);
-        const text = await generateValidatedArticle(bPrompt, cfg);
-        if(text) {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer '+cfg.groq
+        },
+        body:JSON.stringify({
+          model:'llama-3.3-70b-versatile',
+          max_tokens:4000,
+          messages:[{role:'user',content:buildPrompt(s.name,si,ai,document.getElementById('batch-lang').value)}]
+        })
+      });
+      const d = await res.json();
+      if(!d.error) {
+        const text = d.choices[0].message.content;
         const a = {surah:si,ayah:ai,surahName:s.name,title:'تفسير سورة '+s.name+' — الآية '+ai,slug:'surah-'+si+'-ayah-'+ai,content:text};
         preview = a;
         const newList = [...articles.filter(x=>x.slug!==a.slug),{slug:a.slug,title:a.title,surahName:a.surahName,surah:a.surah,ayah:a.ayah}].sort((x,y)=>x.surah-y.surah||x.ayah-y.ayah);
@@ -1132,8 +970,10 @@ async function startBatch() {
         renderPublished();
         renderProgress();
         addLog('[OK] نُشر: '+a.title+' ('+articles.length+' مقال)','success');
-        } // end if text
-    } catch(e) { addLog('[X] '+e.message,'error'); if(e.message.includes('كل المفاتيح')) { batchRunning=false; break; } }
+      } else {
+        addLog('[X] Groq: '+d.error.message,'error');
+      }
+    } catch(e) { addLog('[X] خطأ نشر: '+e.message,'error'); }
     done++; ai++;
     if(batchRunning && done < count) await new Promise(r=>setTimeout(r,delay));
   }
