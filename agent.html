@@ -1,4 +1,6 @@
-<html lang="ar" dir="rtl"><head>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>عميل نور القرآن — Groq مجاني</title>
@@ -85,12 +87,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
   <button class="tab active" onclick="switchTab('config')">⚙️ الإعداد</button>
   <button class="tab" onclick="switchTab('generate')">✍️ توليد</button>
   <button class="tab" onclick="switchTab('preview')" id="tab-preview">👁️ معاينة</button>
-  <button class="tab" onclick="switchTab('published')" id="tab-pub">📚 (6)</button>
+  <button class="tab" onclick="switchTab('published')" id="tab-pub">📚 (0)</button>
   <button class="tab" onclick="switchTab('progress')">📊 التقدم</button>
   <button class="tab" onclick="switchTab('logs')">📋 السجل</button>
 </div>
 
-<div id="logbar" class="logbar show success">[OK] intro.html</div>
+<div id="logbar" class="logbar"></div>
 
 <div class="body">
 
@@ -108,9 +110,22 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         </ol>
       </div>
       <div style="margin-bottom:12px">
-        <label class="lbl">🤖 مفتاح Groq API — <span style="color:#1b5e20;font-weight:400">مجاني تماماً — <a href="https://console.groq.com/keys" target="_blank" style="color:#0a3d2e">احصل عليه هنا</a></span></label>
-        <input type="password" id="cfg-groq" class="inp" placeholder="gsk_xxxxxxxxxxxxxxxxxx">
-        <div style="font-size:.76em;color:#888;margin-top:3px;">سجّل في groq.com ← Keys ← Create API Key (مجاني بدون بطاقة بنكية)</div>
+        <label class="lbl">🤖 مفاتيح API — أضف حتى 5 مفاتيح للتبديل التلقائي عند نفاد الحصة</label>
+        <div style="margin-bottom:6px">
+          <select id="cfg-provider" class="sel" onchange="updateProviderHint()" style="margin-bottom:6px">
+            <option value="groq">Groq (llama-3.3-70b) — 100K token/يوم مجاناً</option>
+            <option value="groq2">Groq مفتاح ثانٍ (حساب آخر)</option>
+            <option value="groq3">Groq مفتاح ثالث (حساب آخر)</option>
+            <option value="gemini">Google Gemini (gemini-1.5-flash) — مجاني</option>
+            <option value="openrouter">OpenRouter (mistral-7b) — مجاني</option>
+          </select>
+        </div>
+        <input type="password" id="cfg-groq" class="inp" placeholder="المفتاح الرئيسي — gsk_... أو AIza..." style="margin-bottom:4px">
+        <input type="password" id="cfg-groq2" class="inp" placeholder="مفتاح 2 (اختياري) — عند نفاد الأول" style="margin-bottom:4px">
+        <input type="password" id="cfg-groq3" class="inp" placeholder="مفتاح 3 (اختياري) — عند نفاد الثاني" style="margin-bottom:4px">
+        <div id="provider-hint" style="font-size:.76em;color:#555;margin-top:3px;padding:6px;background:#f5f5f5;border-right:3px solid #b8860b">
+          Groq مجاني: سجّل في <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> — يمكن إنشاء حسابات متعددة بإيميلات مختلفة (Gmail)
+        </div>
       </div>
       <div style="margin-bottom:12px">
         <label class="lbl">👤 اسم المستخدم على GitHub</label>
@@ -124,8 +139,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         <label class="lbl">🔑 Personal Access Token</label>
         <input type="password" id="cfg-token" class="inp" placeholder="ghp_xxxxxxxxxx">
       </div>
-      <div class="gold" id="site-url-box" style="display: block;">
-        موقعك : <strong id="site-url">https://khayati-quran.github.io/Verses-nour</strong>
+      <div class="gold" id="site-url-box" style="display:none">
+        موقعك : <strong id="site-url"></strong>
       </div>
       <div class="info" id="agent-link-box" style="display:none;margin-top:8px;">
         <strong>رابط الأداة على GitHub Pages (احفظه!) :</strong><br>
@@ -133,7 +148,8 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
         <div style="margin-top:6px;font-size:.78em;color:#555;">استخدم هذا الرابط بدلاً من Blogger — يعمل بشكل مثالي</div>
       </div>
       <div class="row">
-        <button class="btn-g" onclick="initRepo()" disabled="">🚀 تهيئة الموقع (4 صفحات)</button>
+        <button class="btn-g" id="btn-init" onclick="initRepo()">تهيئة الموقع (4 صفحات)</button>
+        <button class="btn-o" onclick="testConnection()" style="margin-right:8px">اختبار الاتصال</button>
         <button class="btn-o" id="btn-next" onclick="switchTab('generate')" style="display:none">التالي ←</button>
       </div>
     </div>
@@ -154,14 +170,24 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
     <div class="card">
       <h2 style="color:#0a3d2e;margin-bottom:14px;font-size:1.02em;">✍️ توليد مقال تفسيري</h2>
       <div class="gold">✦ كل مقال : التفسير الأصيل + خاطرة الشعراوي + الإعجاز العلمي + عبرة بثلاثة مستويات + رابط يوتيوب الشعراوي</div>
+      <div style="margin:10px 0 4px">
+        <label class="lbl">🌍 لغة المقال</label>
+        <select id="sel-lang" class="sel">
+          <option value="ar">العربية (الأصلية)</option>
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+          <option value="id">Indonesia</option>
+        </select>
+      </div>
       <div class="grid2" style="margin-bottom:14px;margin-top:12px;">
         <div>
           <label class="lbl">📖 السورة</label>
-          <select id="sel-surah" class="sel" onchange="updateAyahs()"><option value="1">1. الفاتحة (7)</option><option value="2">2. البقرة (286)</option><option value="3">3. آل عمران (200)</option><option value="4">4. النساء (176)</option><option value="5">5. المائدة (120)</option><option value="6">6. الأنعام (165)</option><option value="7">7. الأعراف (206)</option><option value="8">8. الأنفال (75)</option><option value="9">9. التوبة (129)</option><option value="10">10. يونس (109)</option><option value="11">11. هود (123)</option><option value="12">12. يوسف (111)</option><option value="13">13. الرعد (43)</option><option value="14">14. إبراهيم (52)</option><option value="15">15. الحجر (99)</option><option value="16">16. النحل (128)</option><option value="17">17. الإسراء (111)</option><option value="18">18. الكهف (110)</option><option value="19">19. مريم (98)</option><option value="20">20. طه (135)</option><option value="21">21. الأنبياء (112)</option><option value="22">22. الحج (78)</option><option value="23">23. المؤمنون (118)</option><option value="24">24. النور (64)</option><option value="25">25. الفرقان (77)</option><option value="26">26. الشعراء (227)</option><option value="27">27. النمل (93)</option><option value="28">28. القصص (88)</option><option value="29">29. العنكبوت (69)</option><option value="30">30. الروم (60)</option><option value="31">31. لقمان (34)</option><option value="32">32. السجدة (30)</option><option value="33">33. الأحزاب (73)</option><option value="34">34. سبأ (54)</option><option value="35">35. فاطر (45)</option><option value="36">36. يس (83)</option><option value="37">37. الصافات (182)</option><option value="38">38. ص (88)</option><option value="39">39. الزمر (75)</option><option value="40">40. غافر (85)</option><option value="41">41. فصلت (54)</option><option value="42">42. الشورى (53)</option><option value="43">43. الزخرف (89)</option><option value="44">44. الدخان (59)</option><option value="45">45. الجاثية (37)</option><option value="46">46. الأحقاف (35)</option><option value="47">47. محمد (38)</option><option value="48">48. الفتح (29)</option><option value="49">49. الحجرات (18)</option><option value="50">50. ق (45)</option><option value="51">51. الذاريات (60)</option><option value="52">52. الطور (49)</option><option value="53">53. النجم (62)</option><option value="54">54. القمر (55)</option><option value="55">55. الرحمن (78)</option><option value="56">56. الواقعة (96)</option><option value="57">57. الحديد (29)</option><option value="58">58. المجادلة (22)</option><option value="59">59. الحشر (24)</option><option value="60">60. الممتحنة (13)</option><option value="61">61. الصف (14)</option><option value="62">62. الجمعة (11)</option><option value="63">63. المنافقون (11)</option><option value="64">64. التغابن (18)</option><option value="65">65. الطلاق (12)</option><option value="66">66. التحريم (12)</option><option value="67">67. الملك (30)</option><option value="68">68. القلم (52)</option><option value="69">69. الحاقة (52)</option><option value="70">70. المعارج (44)</option><option value="71">71. نوح (28)</option><option value="72">72. الجن (28)</option><option value="73">73. المزمل (20)</option><option value="74">74. المدثر (56)</option><option value="75">75. القيامة (40)</option><option value="76">76. الإنسان (31)</option><option value="77">77. المرسلات (50)</option><option value="78">78. النبأ (40)</option><option value="79">79. النازعات (46)</option><option value="80">80. عبس (42)</option><option value="81">81. التكوير (29)</option><option value="82">82. الانفطار (19)</option><option value="83">83. المطففين (36)</option><option value="84">84. الانشقاق (25)</option><option value="85">85. البروج (22)</option><option value="86">86. الطارق (17)</option><option value="87">87. الأعلى (19)</option><option value="88">88. الغاشية (26)</option><option value="89">89. الفجر (30)</option><option value="90">90. البلد (20)</option><option value="91">91. الشمس (15)</option><option value="92">92. الليل (21)</option><option value="93">93. الضحى (11)</option><option value="94">94. الشرح (8)</option><option value="95">95. التين (8)</option><option value="96">96. العلق (19)</option><option value="97">97. القدر (5)</option><option value="98">98. البينة (8)</option><option value="99">99. الزلزلة (8)</option><option value="100">100. العاديات (11)</option><option value="101">101. القارعة (11)</option><option value="102">102. التكاثر (8)</option><option value="103">103. العصر (3)</option><option value="104">104. الهمزة (9)</option><option value="105">105. الفيل (5)</option><option value="106">106. قريش (4)</option><option value="107">107. الماعون (7)</option><option value="108">108. الكوثر (3)</option><option value="109">109. الكافرون (6)</option><option value="110">110. النصر (3)</option><option value="111">111. المسد (5)</option><option value="112">112. الإخلاص (4)</option><option value="113">113. الفلق (5)</option><option value="114">114. الناس (6)</option></select>
+          <select id="sel-surah" class="sel" onchange="updateAyahs()"></select>
         </div>
         <div>
           <label class="lbl">📍 الآية</label>
-          <select id="sel-ayah" class="sel"><option value="1">الآية 1</option><option value="2">الآية 2</option><option value="3">الآية 3</option><option value="4">الآية 4</option><option value="5">الآية 5</option><option value="6">الآية 6</option><option value="7">الآية 7</option></select>
+          <select id="sel-ayah" class="sel"></select>
         </div>
       </div>
       <div class="row">
@@ -172,10 +198,20 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
     <div class="card">
       <h3 style="color:#0a3d2e;margin-bottom:8px;font-size:.95em;">⚡ الوضع الدُفعي — توليد ونشر متسلسل</h3>
       <div class="warn">كل مقال ~20 ثانية. يولّد وينشر تلقائياً. أقصى 20 مقال.</div>
+      <div style="margin:8px 0 4px">
+        <label class="lbl">🌍 لغة الدُفعة</label>
+        <select id="batch-lang" class="sel">
+          <option value="ar">العربية</option>
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+          <option value="id">Indonesia</option>
+        </select>
+      </div>
       <div class="grid4" style="margin-bottom:12px;margin-top:10px;">
         <div>
           <label class="lbl">من سورة</label>
-          <select id="batch-surah" class="sel"><option value="1">1. الفاتحة (7)</option><option value="2">2. البقرة (286)</option><option value="3">3. آل عمران (200)</option><option value="4">4. النساء (176)</option><option value="5">5. المائدة (120)</option><option value="6">6. الأنعام (165)</option><option value="7">7. الأعراف (206)</option><option value="8">8. الأنفال (75)</option><option value="9">9. التوبة (129)</option><option value="10">10. يونس (109)</option><option value="11">11. هود (123)</option><option value="12">12. يوسف (111)</option><option value="13">13. الرعد (43)</option><option value="14">14. إبراهيم (52)</option><option value="15">15. الحجر (99)</option><option value="16">16. النحل (128)</option><option value="17">17. الإسراء (111)</option><option value="18">18. الكهف (110)</option><option value="19">19. مريم (98)</option><option value="20">20. طه (135)</option><option value="21">21. الأنبياء (112)</option><option value="22">22. الحج (78)</option><option value="23">23. المؤمنون (118)</option><option value="24">24. النور (64)</option><option value="25">25. الفرقان (77)</option><option value="26">26. الشعراء (227)</option><option value="27">27. النمل (93)</option><option value="28">28. القصص (88)</option><option value="29">29. العنكبوت (69)</option><option value="30">30. الروم (60)</option><option value="31">31. لقمان (34)</option><option value="32">32. السجدة (30)</option><option value="33">33. الأحزاب (73)</option><option value="34">34. سبأ (54)</option><option value="35">35. فاطر (45)</option><option value="36">36. يس (83)</option><option value="37">37. الصافات (182)</option><option value="38">38. ص (88)</option><option value="39">39. الزمر (75)</option><option value="40">40. غافر (85)</option><option value="41">41. فصلت (54)</option><option value="42">42. الشورى (53)</option><option value="43">43. الزخرف (89)</option><option value="44">44. الدخان (59)</option><option value="45">45. الجاثية (37)</option><option value="46">46. الأحقاف (35)</option><option value="47">47. محمد (38)</option><option value="48">48. الفتح (29)</option><option value="49">49. الحجرات (18)</option><option value="50">50. ق (45)</option><option value="51">51. الذاريات (60)</option><option value="52">52. الطور (49)</option><option value="53">53. النجم (62)</option><option value="54">54. القمر (55)</option><option value="55">55. الرحمن (78)</option><option value="56">56. الواقعة (96)</option><option value="57">57. الحديد (29)</option><option value="58">58. المجادلة (22)</option><option value="59">59. الحشر (24)</option><option value="60">60. الممتحنة (13)</option><option value="61">61. الصف (14)</option><option value="62">62. الجمعة (11)</option><option value="63">63. المنافقون (11)</option><option value="64">64. التغابن (18)</option><option value="65">65. الطلاق (12)</option><option value="66">66. التحريم (12)</option><option value="67">67. الملك (30)</option><option value="68">68. القلم (52)</option><option value="69">69. الحاقة (52)</option><option value="70">70. المعارج (44)</option><option value="71">71. نوح (28)</option><option value="72">72. الجن (28)</option><option value="73">73. المزمل (20)</option><option value="74">74. المدثر (56)</option><option value="75">75. القيامة (40)</option><option value="76">76. الإنسان (31)</option><option value="77">77. المرسلات (50)</option><option value="78">78. النبأ (40)</option><option value="79">79. النازعات (46)</option><option value="80">80. عبس (42)</option><option value="81">81. التكوير (29)</option><option value="82">82. الانفطار (19)</option><option value="83">83. المطففين (36)</option><option value="84">84. الانشقاق (25)</option><option value="85">85. البروج (22)</option><option value="86">86. الطارق (17)</option><option value="87">87. الأعلى (19)</option><option value="88">88. الغاشية (26)</option><option value="89">89. الفجر (30)</option><option value="90">90. البلد (20)</option><option value="91">91. الشمس (15)</option><option value="92">92. الليل (21)</option><option value="93">93. الضحى (11)</option><option value="94">94. الشرح (8)</option><option value="95">95. التين (8)</option><option value="96">96. العلق (19)</option><option value="97">97. القدر (5)</option><option value="98">98. البينة (8)</option><option value="99">99. الزلزلة (8)</option><option value="100">100. العاديات (11)</option><option value="101">101. القارعة (11)</option><option value="102">102. التكاثر (8)</option><option value="103">103. العصر (3)</option><option value="104">104. الهمزة (9)</option><option value="105">105. الفيل (5)</option><option value="106">106. قريش (4)</option><option value="107">107. الماعون (7)</option><option value="108">108. الكوثر (3)</option><option value="109">109. الكافرون (6)</option><option value="110">110. النصر (3)</option><option value="111">111. المسد (5)</option><option value="112">112. الإخلاص (4)</option><option value="113">113. الفلق (5)</option><option value="114">114. الناس (6)</option></select>
+          <select id="batch-surah" class="sel"></select>
         </div>
         <div>
           <label class="lbl">من آية</label>
@@ -199,23 +235,12 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
 
   <!-- PREVIEW -->
   <div id="tab-preview" class="tab-content">
-    <div id="preview-empty" class="card" style="text-align:center;padding:40px">
-      <div style="font-size:3em">📄</div>
-      <div style="color:#888;margin-top:10px">لم يتم توليد مقال بعد</div>
-      <button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
-    </div>
-    <div id="preview-content" style="display:none">
-      <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <div>
-          <div id="preview-title" style="font-weight:700;color:#0a3d2e"></div>
-          <div id="preview-chars" style="color:#888;font-size:.8em;margin-top:2px"></div>
-        </div>
-        <div class="row" style="margin:0">
-          <button class="btn-au" id="btn-pub" onclick="publishArticle()">🚀 نشر على GitHub Pages</button>
-          <button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>
-        </div>
+    <div id="preview-zone">
+      <div style="text-align:center;padding:40px;color:#888">
+        <div style="font-size:3em;margin-bottom:10px">📄</div>
+        لم يتم توليد مقال بعد
+        <br><button class="btn-g" onclick="switchTab('generate')" style="margin-top:14px">← الذهاب للتوليد</button>
       </div>
-      <div class="preview-area" id="preview-body"></div>
     </div>
   </div>
 
@@ -223,22 +248,22 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
   <div id="tab-published" class="tab-content">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <h2 style="color:#0a3d2e;font-size:1.02em;" id="pub-title">📚 المنشور: 6 / 6236</h2>
-        <a id="site-link" href="https://khayati-quran.github.io/Verses-nour" target="_blank" class="site-link" style="display: inline-block;">🌐 الموقع ↗</a>
+        <h2 style="color:#0a3d2e;font-size:1.02em;" id="pub-title">📚 المنشور: 0 / 6236</h2>
+        <a id="site-link" href="#" target="_blank" class="site-link" style="display:none">🌐 الموقع ↗</a>
       </div>
-      <div id="art-list"><div class="art-item"><span style="color:#333;font-size:.85em">📖 تفسير سورة الفاتحة — الآية 1</span><a href="https://khayati-quran.github.io/Verses-nour/articles/surah-1-ayah-1.html" target="_blank" style="color:#b8860b;font-size:.76em;text-decoration:none">عرض ↗</a></div><div class="art-item"><span style="color:#333;font-size:.85em">📖 تفسير سورة الفاتحة — الآية 2</span><a href="https://khayati-quran.github.io/Verses-nour/articles/surah-1-ayah-2.html" target="_blank" style="color:#b8860b;font-size:.76em;text-decoration:none">عرض ↗</a></div><div class="art-item"><span style="color:#333;font-size:.85em">📖 تفسير سورة الفاتحة — الآية 3</span><a href="https://khayati-quran.github.io/Verses-nour/articles/surah-1-ayah-3.html" target="_blank" style="color:#b8860b;font-size:.76em;text-decoration:none">عرض ↗</a></div><div class="art-item"><span style="color:#333;font-size:.85em">📖 تفسير سورة الفاتحة — الآية 4</span><a href="https://khayati-quran.github.io/Verses-nour/articles/surah-1-ayah-4.html" target="_blank" style="color:#b8860b;font-size:.76em;text-decoration:none">عرض ↗</a></div><div class="art-item"><span style="color:#333;font-size:.85em">📖 تفسير سورة الفاتحة — الآية 5</span><a href="https://khayati-quran.github.io/Verses-nour/articles/surah-1-ayah-5.html" target="_blank" style="color:#b8860b;font-size:.76em;text-decoration:none">عرض ↗</a></div><div class="art-item"><span style="color:#333;font-size:.85em">📖 تفسير سورة الناس — الآية 1</span><a href="https://khayati-quran.github.io/Verses-nour/articles/surah-114-ayah-1.html" target="_blank" style="color:#b8860b;font-size:.76em;text-decoration:none">عرض ↗</a></div></div>
+      <div id="art-list"><div style="text-align:center;padding:36px;color:#aaa">لا توجد مقالات بعد</div></div>
     </div>
   </div>
 
   <!-- PROGRESS -->
   <div id="tab-progress" class="tab-content">
     <div class="card">
-      <h2 style="color:#0a3d2e;margin-bottom:16px;font-size:1.02em;" id="prog-title">📊 التقدم: 6 / 6236</h2>
+      <h2 style="color:#0a3d2e;margin-bottom:16px;font-size:1.02em;" id="prog-title">📊 التقدم: 0 / 6236</h2>
       <div class="progress-bar">
-        <div class="progress-fill" id="prog-fill" style="width: 0.1%;"></div>
-        <div class="progress-txt" id="prog-txt">0.10% مكتمل</div>
+        <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+        <div class="progress-txt" id="prog-txt">0.00% مكتمل</div>
       </div>
-      <div class="surah-grid" id="surah-grid"><div class="surah-card partial"><div class="surah-name">الفاتحة</div><div class="surah-count">5/7</div><div class="surah-prog"><div class="surah-prog-fill " style="width:71.42857142857143%"></div></div></div><div class="surah-card "><div class="surah-name">البقرة</div><div class="surah-count">0/286</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">آل عمران</div><div class="surah-count">0/200</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النساء</div><div class="surah-count">0/176</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المائدة</div><div class="surah-count">0/120</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأنعام</div><div class="surah-count">0/165</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأعراف</div><div class="surah-count">0/206</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأنفال</div><div class="surah-count">0/75</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التوبة</div><div class="surah-count">0/129</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">يونس</div><div class="surah-count">0/109</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">هود</div><div class="surah-count">0/123</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">يوسف</div><div class="surah-count">0/111</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الرعد</div><div class="surah-count">0/43</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">إبراهيم</div><div class="surah-count">0/52</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحجر</div><div class="surah-count">0/99</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النحل</div><div class="surah-count">0/128</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الإسراء</div><div class="surah-count">0/111</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الكهف</div><div class="surah-count">0/110</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">مريم</div><div class="surah-count">0/98</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">طه</div><div class="surah-count">0/135</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأنبياء</div><div class="surah-count">0/112</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحج</div><div class="surah-count">0/78</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المؤمنون</div><div class="surah-count">0/118</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النور</div><div class="surah-count">0/64</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفرقان</div><div class="surah-count">0/77</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشعراء</div><div class="surah-count">0/227</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النمل</div><div class="surah-count">0/93</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القصص</div><div class="surah-count">0/88</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العنكبوت</div><div class="surah-count">0/69</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الروم</div><div class="surah-count">0/60</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">لقمان</div><div class="surah-count">0/34</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">السجدة</div><div class="surah-count">0/30</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأحزاب</div><div class="surah-count">0/73</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">سبأ</div><div class="surah-count">0/54</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">فاطر</div><div class="surah-count">0/45</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">يس</div><div class="surah-count">0/83</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الصافات</div><div class="surah-count">0/182</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">ص</div><div class="surah-count">0/88</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الزمر</div><div class="surah-count">0/75</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">غافر</div><div class="surah-count">0/85</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">فصلت</div><div class="surah-count">0/54</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشورى</div><div class="surah-count">0/53</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الزخرف</div><div class="surah-count">0/89</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الدخان</div><div class="surah-count">0/59</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الجاثية</div><div class="surah-count">0/37</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأحقاف</div><div class="surah-count">0/35</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">محمد</div><div class="surah-count">0/38</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفتح</div><div class="surah-count">0/29</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحجرات</div><div class="surah-count">0/18</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">ق</div><div class="surah-count">0/45</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الذاريات</div><div class="surah-count">0/60</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الطور</div><div class="surah-count">0/49</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النجم</div><div class="surah-count">0/62</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القمر</div><div class="surah-count">0/55</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الرحمن</div><div class="surah-count">0/78</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الواقعة</div><div class="surah-count">0/96</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحديد</div><div class="surah-count">0/29</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المجادلة</div><div class="surah-count">0/22</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحشر</div><div class="surah-count">0/24</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الممتحنة</div><div class="surah-count">0/13</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الصف</div><div class="surah-count">0/14</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الجمعة</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المنافقون</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التغابن</div><div class="surah-count">0/18</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الطلاق</div><div class="surah-count">0/12</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التحريم</div><div class="surah-count">0/12</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الملك</div><div class="surah-count">0/30</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القلم</div><div class="surah-count">0/52</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الحاقة</div><div class="surah-count">0/52</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المعارج</div><div class="surah-count">0/44</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">نوح</div><div class="surah-count">0/28</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الجن</div><div class="surah-count">0/28</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المزمل</div><div class="surah-count">0/20</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المدثر</div><div class="surah-count">0/56</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القيامة</div><div class="surah-count">0/40</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الإنسان</div><div class="surah-count">0/31</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المرسلات</div><div class="surah-count">0/50</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النبأ</div><div class="surah-count">0/40</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النازعات</div><div class="surah-count">0/46</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">عبس</div><div class="surah-count">0/42</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التكوير</div><div class="surah-count">0/29</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الانفطار</div><div class="surah-count">0/19</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المطففين</div><div class="surah-count">0/36</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الانشقاق</div><div class="surah-count">0/25</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البروج</div><div class="surah-count">0/22</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الطارق</div><div class="surah-count">0/17</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الأعلى</div><div class="surah-count">0/19</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الغاشية</div><div class="surah-count">0/26</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفجر</div><div class="surah-count">0/30</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البلد</div><div class="surah-count">0/20</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشمس</div><div class="surah-count">0/15</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الليل</div><div class="surah-count">0/21</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الضحى</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الشرح</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التين</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العلق</div><div class="surah-count">0/19</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القدر</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">البينة</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الزلزلة</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العاديات</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">القارعة</div><div class="surah-count">0/11</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">التكاثر</div><div class="surah-count">0/8</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">العصر</div><div class="surah-count">0/3</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الهمزة</div><div class="surah-count">0/9</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفيل</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">قريش</div><div class="surah-count">0/4</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الماعون</div><div class="surah-count">0/7</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الكوثر</div><div class="surah-count">0/3</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الكافرون</div><div class="surah-count">0/6</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">النصر</div><div class="surah-count">0/3</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">المسد</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الإخلاص</div><div class="surah-count">0/4</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card "><div class="surah-name">الفلق</div><div class="surah-count">0/5</div><div class="surah-prog"><div class="surah-prog-fill " style="width:0%"></div></div></div><div class="surah-card partial"><div class="surah-name">الناس</div><div class="surah-count">1/6</div><div class="surah-prog"><div class="surah-prog-fill " style="width:16.666666666666664%"></div></div></div></div>
+      <div class="surah-grid" id="surah-grid"></div>
     </div>
   </div>
 
@@ -246,10 +271,13 @@ body{font-family:'Cairo',sans-serif;direction:rtl;background:#f5ead0;min-height:
   <div id="tab-logs" class="tab-content">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h2 style="color:#0a3d2e;font-size:1.02em">📋 سجل العمليات</h2>
-        <button class="btn-o" onclick="clearLogs()">مسح</button>
+        <h2 style="color:#0a3d2e;font-size:1.02em">سجل العمليات</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn-o" onclick="testPublish()" title="اختبار النشر على GitHub">اختبار النشر</button>
+          <button class="btn-o" onclick="clearLogs()">مسح</button>
+        </div>
       </div>
-      <div id="log-list"><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">10:20:30 ص</span><span>[OK] intro.html</span></div><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">10:20:29 ص</span><span>[OK] references.html</span></div><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">10:20:28 ص</span><span>[OK] articles.html</span></div><div class="log-entry success"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">10:20:27 ص</span><span>[OK] index.html</span></div><div class="log-entry info"><span style="opacity: 0.5; font-size: 0.85em; white-space: nowrap;">10:20:25 ص</span><span>[...] تهيئة الموقع...</span></div></div>
+      <div id="log-list"><div style="text-align:center;padding:28px;color:#aaa">لا سجلات</div></div>
     </div>
   </div>
 
@@ -263,15 +291,98 @@ const SURAHS = [
   {n:1,name:"الفاتحة",ayahs:7},{n:2,name:"البقرة",ayahs:286},{n:3,name:"آل عمران",ayahs:200},{n:4,name:"النساء",ayahs:176},{n:5,name:"المائدة",ayahs:120},{n:6,name:"الأنعام",ayahs:165},{n:7,name:"الأعراف",ayahs:206},{n:8,name:"الأنفال",ayahs:75},{n:9,name:"التوبة",ayahs:129},{n:10,name:"يونس",ayahs:109},{n:11,name:"هود",ayahs:123},{n:12,name:"يوسف",ayahs:111},{n:13,name:"الرعد",ayahs:43},{n:14,name:"إبراهيم",ayahs:52},{n:15,name:"الحجر",ayahs:99},{n:16,name:"النحل",ayahs:128},{n:17,name:"الإسراء",ayahs:111},{n:18,name:"الكهف",ayahs:110},{n:19,name:"مريم",ayahs:98},{n:20,name:"طه",ayahs:135},{n:21,name:"الأنبياء",ayahs:112},{n:22,name:"الحج",ayahs:78},{n:23,name:"المؤمنون",ayahs:118},{n:24,name:"النور",ayahs:64},{n:25,name:"الفرقان",ayahs:77},{n:26,name:"الشعراء",ayahs:227},{n:27,name:"النمل",ayahs:93},{n:28,name:"القصص",ayahs:88},{n:29,name:"العنكبوت",ayahs:69},{n:30,name:"الروم",ayahs:60},{n:31,name:"لقمان",ayahs:34},{n:32,name:"السجدة",ayahs:30},{n:33,name:"الأحزاب",ayahs:73},{n:34,name:"سبأ",ayahs:54},{n:35,name:"فاطر",ayahs:45},{n:36,name:"يس",ayahs:83},{n:37,name:"الصافات",ayahs:182},{n:38,name:"ص",ayahs:88},{n:39,name:"الزمر",ayahs:75},{n:40,name:"غافر",ayahs:85},{n:41,name:"فصلت",ayahs:54},{n:42,name:"الشورى",ayahs:53},{n:43,name:"الزخرف",ayahs:89},{n:44,name:"الدخان",ayahs:59},{n:45,name:"الجاثية",ayahs:37},{n:46,name:"الأحقاف",ayahs:35},{n:47,name:"محمد",ayahs:38},{n:48,name:"الفتح",ayahs:29},{n:49,name:"الحجرات",ayahs:18},{n:50,name:"ق",ayahs:45},{n:51,name:"الذاريات",ayahs:60},{n:52,name:"الطور",ayahs:49},{n:53,name:"النجم",ayahs:62},{n:54,name:"القمر",ayahs:55},{n:55,name:"الرحمن",ayahs:78},{n:56,name:"الواقعة",ayahs:96},{n:57,name:"الحديد",ayahs:29},{n:58,name:"المجادلة",ayahs:22},{n:59,name:"الحشر",ayahs:24},{n:60,name:"الممتحنة",ayahs:13},{n:61,name:"الصف",ayahs:14},{n:62,name:"الجمعة",ayahs:11},{n:63,name:"المنافقون",ayahs:11},{n:64,name:"التغابن",ayahs:18},{n:65,name:"الطلاق",ayahs:12},{n:66,name:"التحريم",ayahs:12},{n:67,name:"الملك",ayahs:30},{n:68,name:"القلم",ayahs:52},{n:69,name:"الحاقة",ayahs:52},{n:70,name:"المعارج",ayahs:44},{n:71,name:"نوح",ayahs:28},{n:72,name:"الجن",ayahs:28},{n:73,name:"المزمل",ayahs:20},{n:74,name:"المدثر",ayahs:56},{n:75,name:"القيامة",ayahs:40},{n:76,name:"الإنسان",ayahs:31},{n:77,name:"المرسلات",ayahs:50},{n:78,name:"النبأ",ayahs:40},{n:79,name:"النازعات",ayahs:46},{n:80,name:"عبس",ayahs:42},{n:81,name:"التكوير",ayahs:29},{n:82,name:"الانفطار",ayahs:19},{n:83,name:"المطففين",ayahs:36},{n:84,name:"الانشقاق",ayahs:25},{n:85,name:"البروج",ayahs:22},{n:86,name:"الطارق",ayahs:17},{n:87,name:"الأعلى",ayahs:19},{n:88,name:"الغاشية",ayahs:26},{n:89,name:"الفجر",ayahs:30},{n:90,name:"البلد",ayahs:20},{n:91,name:"الشمس",ayahs:15},{n:92,name:"الليل",ayahs:21},{n:93,name:"الضحى",ayahs:11},{n:94,name:"الشرح",ayahs:8},{n:95,name:"التين",ayahs:8},{n:96,name:"العلق",ayahs:19},{n:97,name:"القدر",ayahs:5},{n:98,name:"البينة",ayahs:8},{n:99,name:"الزلزلة",ayahs:8},{n:100,name:"العاديات",ayahs:11},{n:101,name:"القارعة",ayahs:11},{n:102,name:"التكاثر",ayahs:8},{n:103,name:"العصر",ayahs:3},{n:104,name:"الهمزة",ayahs:9},{n:105,name:"الفيل",ayahs:5},{n:106,name:"قريش",ayahs:4},{n:107,name:"الماعون",ayahs:7},{n:108,name:"الكوثر",ayahs:3},{n:109,name:"الكافرون",ayahs:6},{n:110,name:"النصر",ayahs:3},{n:111,name:"المسد",ayahs:5},{n:112,name:"الإخلاص",ayahs:4},{n:113,name:"الفلق",ayahs:5},{n:114,name:"الناس",ayahs:6}
 ];
 const TOTAL = SURAHS.reduce((s,x)=>s+x.ayahs,0);
-const WORKER = "https://nour-quran-worker.khayati1hafedh.workers.dev/github";
+const GH_API = "https://api.github.com";
 
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-let articles = JSON.parse(localStorage.getItem('nq-articles') || '[]');
+let articles = [];
+try { articles = JSON.parse(localStorage.getItem('nq-articles') || '[]'); } catch(e) { articles = []; }
 let preview = null;
 let batchRunning = false;
 let logs = [];
+
+
+function sanitizeGeneratedHtml(text) {
+  if(!text) return '';
+  text = String(text).replace(/```html|```/gi, '').trim();
+  text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
+  return text;
+}
+
+function validateGeneratedHtml(text) {
+  var issues = [];
+  if(!text || text.trim().length < 1200) issues.push('النص قصير جداً');
+  if(/[A-Za-z\u00C0-\u024F\u4E00-\u9FFF\u3040-\u30FF]/.test(text)) issues.push('يحتوي على حروف أو كلمات أجنبية');
+  if(/\[[^\]]{1,80}\]/.test(text)) issues.push('توجد بقايا placeholders أو تعليمات');
+  if(/اختم بخاتمة|اذكر الثابت فقط|اكتب المحتوى النهائي|اخرج HTML|لا تكتب|المطلوب|قواعد إلزامية/.test(text)) issues.push('تسربت تعليمات الـ prompt إلى المقال');
+  return issues;
+}
+
+async function generateValidatedArticle(prompt, cfg) {
+  var attempts = 0;
+  var currentPrompt = prompt;
+  while(attempts < 3) {
+    attempts++;
+    var text = await callAI(currentPrompt, cfg);
+    text = sanitizeGeneratedHtml(text);
+    var issues = validateGeneratedHtml(text);
+    if(issues.length === 0) return text;
+    addLog('[!] إعادة توليد بسبب: ' + issues.join('، '), 'warn');
+    currentPrompt = prompt + "\n\nتصحيح إجباري للمحاولة الجديدة: أعد كتابة المقال كاملاً من الصفر، بالعربية فقط، ومنعاً باتاً تسرب التعليمات أو الأقواس المربعة أو أي كلمة أجنبية.";
+  }
+  throw new Error('فشل التوليد النظيف بعد 3 محاولات');
+}
+
+// ═══════════════════════════════════════════════
+// TEST CONNECTION
+// ═══════════════════════════════════════════════
+async function testConnection() {
+  const cfg = getCfg();
+  if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أدخل البيانات أولاً','error');return;}
+  addLog('[...] يختبر الاتصال بـ GitHub...');
+  try {
+    const res = await fetch(GH_API+'/repos/'+cfg.user+'/'+cfg.repo, {
+      headers:{Authorization:'token '+cfg.token, Accept:'application/vnd.github.v3+json'}
+    });
+    if(res.ok) {
+      const d = await res.json();
+      addLog('[OK] الاتصال ناجح! المستودع: '+d.full_name,'success');
+      document.getElementById('btn-init').disabled = false;
+    } else {
+      const e = await res.json();
+      addLog('[X] فشل: '+res.status+' — '+(e.message||'خطأ'),'error');
+    }
+  } catch(e) { addLog('[X] خطأ في الشبكة: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════
+// TEST PUBLISH
+// ═══════════════════════════════════════════════
+async function testPublish() {
+  const cfg = getCfg();
+  if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أدخل البيانات في تبويب الإعداد','error');return;}
+  addLog('[...] اختبار الكتابة على GitHub...');
+  try {
+    const testContent = '<!-- test '+Date.now()+' -->';
+    await pubFile(cfg.token,cfg.user,cfg.repo,'test-write.html',testContent,'اختبار الكتابة');
+    addLog('[OK] النشر يعمل! يمكن الكتابة على GitHub','success');
+    addLog('[...] حذف ملف الاختبار...');
+    // Try to delete it
+    const ex = await ghGet(cfg.token,cfg.user,cfg.repo,'test-write.html');
+    if(ex && ex.sha) {
+      await fetch(GH_API+'/repos/'+cfg.user+'/'+cfg.repo+'/contents/test-write.html', {
+        method:'DELETE',
+        headers:{'Authorization':'token '+cfg.token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+        body:JSON.stringify({message:'حذف اختبار',sha:ex.sha})
+      });
+      addLog('[OK] تم حذف ملف الاختبار','success');
+    }
+  } catch(e) {
+    addLog('[X] النشر فشل: '+e.message,'error');
+    addLog('تأكد أن Token يملك صلاحية contents:write','warn');
+  }
+}
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -372,13 +483,112 @@ function getCfg() {
     token: document.getElementById('cfg-token').value.trim(),
     user: document.getElementById('cfg-user').value.trim(),
     repo: document.getElementById('cfg-repo').value.trim(),
-    groq: document.getElementById('cfg-groq').value.trim()
+    groq: document.getElementById('cfg-groq').value.trim(),
+    groq2: document.getElementById('cfg-groq2') ? document.getElementById('cfg-groq2').value.trim() : '',
+    groq3: document.getElementById('cfg-groq3') ? document.getElementById('cfg-groq3').value.trim() : '',
+    provider: document.getElementById('cfg-provider') ? document.getElementById('cfg-provider').value : 'groq'
   };
 }
 
+function updateProviderHint() {
+  var hints = {
+    'groq': 'Groq مجاني: سجّل في <a href="https://console.groq.com/keys" target="_blank" style="color:#0a3d2e">console.groq.com/keys</a> — يمكن إنشاء حسابات متعددة بإيميلات Gmail مختلفة (100K token/يوم لكل حساب)',
+    'groq2': 'مفتاح Groq ثانٍ من حساب مختلف — نفس الموقع: console.groq.com/keys',
+    'groq3': 'مفتاح Groq ثالث من حساب مختلف — نفس الموقع: console.groq.com/keys',
+    'gemini': 'Gemini مجاني: سجّل في <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#0a3d2e">aistudio.google.com</a> — المفتاح يبدأ بـ AIza...',
+    'openrouter': 'OpenRouter مجاني: سجّل في <a href="https://openrouter.ai/keys" target="_blank" style="color:#0a3d2e">openrouter.ai/keys</a> — نماذج مجانية متعددة'
+  };
+  var sel = document.getElementById('cfg-provider').value;
+  document.getElementById('provider-hint').innerHTML = hints[sel] || hints['groq'];
+}
+
+// Smart API call with automatic key rotation
+var currentKeyIndex = 0;
+var keyExhausted = [false, false, false];
+
+async function callAI(prompt, cfg) {
+  // Get available keys
+  var keys = [cfg.groq, cfg.groq2, cfg.groq3].filter(k => k && k.length > 5);
+  if(keys.length === 0) throw new Error('لا يوجد مفتاح API — أدخل مفتاحاً في الإعداد');
+
+  // Try each key in rotation
+  for(var attempt = 0; attempt < keys.length; attempt++) {
+    var keyIdx = (currentKeyIndex + attempt) % keys.length;
+    var key = keys[keyIdx];
+    var provider = cfg.provider || 'groq';
+    // If key2 or key3, always use groq
+    if(keyIdx > 0) provider = 'groq';
+
+    try {
+      var result = await callProvider(provider, key, prompt);
+      currentKeyIndex = keyIdx; // Remember which key worked
+      return result;
+    } catch(e) {
+      var msg = e.message || '';
+      // Rate limit or quota exceeded - try next key
+      if(msg.includes('rate_limit') || msg.includes('quota') || msg.includes('Rate limit') || msg.includes('429') || msg.includes('TPD')) {
+        addLog('[!] مفتاح ' + (keyIdx+1) + ' نفد — أجرب المفتاح التالي...', 'warn');
+        currentKeyIndex = (keyIdx + 1) % keys.length;
+        continue;
+      }
+      throw e; // Other error - don't retry
+    }
+  }
+  throw new Error('كل المفاتيح نفدت حصتها اليومية — انتظر غداً أو أضف مفاتيح جديدة');
+}
+
+async function callProvider(provider, key, prompt) {
+  if(provider === 'gemini') {
+    // Google Gemini API
+    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        contents: [{parts: [{text: prompt}]}],
+        generationConfig: {maxOutputTokens: 4000, temperature: 0.7}
+      })
+    });
+    var d = await res.json();
+    if(!res.ok) throw new Error((d.error && d.error.message) || 'Gemini HTTP ' + res.status);
+    if(d.error) throw new Error(d.error.message);
+    return d.candidates[0].content.parts[0].text;
+  }
+
+  if(provider === 'openrouter') {
+    // OpenRouter API (free models)
+    var res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key},
+      body: JSON.stringify({
+        model: 'mistralai/mistral-7b-instruct:free',
+        max_tokens: 4000,
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+    var d = await res.json();
+    if(!res.ok) throw new Error((d.error && d.error.message) || 'OpenRouter HTTP ' + res.status);
+    return d.choices[0].message.content;
+  }
+
+  // Default: Groq
+  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key},
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 4000,
+      messages: [{role: 'user', content: prompt}]
+    })
+  });
+  var d = await res.json();
+  if(!res.ok) throw new Error((d.error && d.error.message) || 'Groq HTTP ' + res.status);
+  if(d.error) throw new Error(d.error.message);
+  return d.choices[0].message.content;
+}
+
 async function ghGet(t,u,r,p) {
-  const res = await fetch(WORKER+'/repos/'+u+'/'+r+'/contents/'+p, {
-    headers: {Authorization:'token '+t, Accept:'application/vnd.github.v3+json'}
+  const res = await fetch(GH_API+'/repos/'+u+'/'+r+'/contents/'+p, {
+    headers: {Authorization:'token '+t, Accept:'application/vnd.github.v3+json', 'X-GitHub-Api-Version':'2022-11-28'}
   });
   return res.ok ? res.json() : null;
 }
@@ -386,12 +596,20 @@ async function ghGet(t,u,r,p) {
 async function ghPut(t,u,r,p,c,m,sha=null) {
   const b = {message:m, content:btoa(unescape(encodeURIComponent(c)))};
   if(sha) b.sha = sha;
-  const res = await fetch(WORKER+'/repos/'+u+'/'+r+'/contents/'+p, {
+  const res = await fetch(GH_API+'/repos/'+u+'/'+r+'/contents/'+p, {
     method:'PUT',
-    headers:{Authorization:'token '+t,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'},
+    headers:{
+      'Authorization':'token '+t,
+      'Content-Type':'application/json',
+      'Accept':'application/vnd.github.v3+json'
+    },
     body:JSON.stringify(b)
   });
-  if(!res.ok) { const e = await res.json(); throw new Error(e.message); }
+  if(!res.ok) {
+    let msg = 'HTTP '+res.status;
+    try { const e = await res.json(); msg = e.message || msg; } catch(x){}
+    throw new Error(msg+' ('+p+')');
+  }
   return res.json();
 }
 
@@ -614,43 +832,171 @@ ${siteFooter()}</body></html>`;
 // ═══════════════════════════════════════════════
 // AI PROMPT
 // ═══════════════════════════════════════════════
-function buildPrompt(surahName, sN, aN) {
-  return `أنت عالم إسلامي رباني متخصص في التفسير وعلوم القرآن والإعجاز. أعدّ مقالاً تفسيرياً شاملاً لـ:
-📖 سورة: ${surahName} (رقم ${sN}) | الآية: ${aN}
+function buildPrompt(surahName, sN, aN, lang) {
+  lang = lang || 'ar';
 
-🔴 قواعد عقدية لا تُخالَف:
-• لا تقل أبداً "نبدأ بالله" — الصواب دائماً "نبدأ باسم الله" (الباء للاستعانة)
-• الله سبحانه منزّه عن التشبيه والحلول
-• كل قول يُنسب لصاحبه من المفسرين
-• لا تذكر إعجازاً علمياً إلا ما ثبت قطعاً
+  if (lang === 'ar') {
+    return `أنت محرر تفسير عربي رفيع المستوى، تجمع بين سلامة العقيدة، ودقة التوثيق، وجمال الأسلوب، والقدرة على جذب القارئ دون حشو.
 
-اكتب HTML داخلي فقط (بدون DOCTYPE/html/body/style) بهذه الأقسام:
+المطلوب: كتابة مقال تفسيري عربي كامل عن سورة ${surahName} الآية ${aN}.
 
-<div class="ayah-box"><div class="ayah-text">[نص الآية كاملاً بالرسم العثماني]</div><div class="ayah-ref">سورة ${surahName} — الآية ${aN}</div></div>
+قواعد إلزامية لا يجوز مخالفتها:
+1) العربية فقط. ممنوع أي كلمة أو حرف أجنبي أو مترجم آلي أو مزج لغات.
+2) لا تكتب تعليمات، ولا عناوين تفسيرية بين أقواس مربعة، ولا تكرر ألفاظ الطلب مثل: اذكر، بين، استخرج، اختم.
+3) اكتب المحتوى النهائي فقط، الجاهز للنشر، بصياغة طبيعية.
+4) لا تخترع سبب نزول. إذا لم يثبت، فاكتب بوضوح: لم يثبت في هذه الآية سبب نزول خاص فيما اشتهر من كتب التفسير.
+5) لا تنسب قولاً لعالم إلا بصياغة موجزة صحيحة. تجنب الإطالة في قال فلان قال فلان. المطلوب خلاصة نافعة منسوبة.
+6) خاطرة الشعراوي تكون بروحه المعروفة: قريبة، حيّة، تمس القلب، وفيها مثال من الحياة، لكن من دون ادعاء نص حرفي غير موثق.
+7) الإعجاز العلمي لا يذكر إلا إذا كان مشهوراً قوياً ومنضبطاً. إن لم يوجد، فاذكر وجهاً من الإعجاز البياني أو التشريعي أو التربوي بدل التكلف.
+8) العبرة الثلاثية جزء أساسي وثابت، ويجب أن تكون خاصة بهذه الآية، لا عامة ولا مكررة.
+9) اذكر أمثلة واقعية معاصرة من حياة الناس في هذا العصر، لكن من دون مبالغة أو قصص مختلقة بشكل فج.
+10) المطلوب مقال طويل مشوق، موثق، حي، غير ممل.
 
-<h2>📍 سياق الآية وسبب النزول</h2>
-<p>[السياق التاريخي الدقيق وسبب النزول إن ثبت بسند صحيح]</p>
+أخرج HTML داخلي فقط، من دون DOCTYPE أو html أو body أو style أو markdown أو علامات ترميز.
 
-<h2>📚 التفسير الشامل — أقوال العلماء</h2>
-<p>[تفسير وافٍ بأقوال ابن كثير والطبري والقرطبي والسعدي وابن عاشور — كل قول منسوب لصاحبه]</p>
-<h3>🔤 المفردات والبلاغة</h3>
-<p>[اشتقاق الكلمات وسرّ اختيارها والصور البلاغية]</p>
-<h3>🎙️ خاطرة الشيخ الشعراوي رحمه الله</h3>
-<p>[لفتة إيمانية مميزة بأسلوب الشعراوي — يُعرف بأسلوبه الشعبي العميق الذي يلامس القلوب]</p>
+البنية المطلوبة بالنص النهائي:
+<div class="ayah-box"><div class="ayah-text">نص الآية بالرسم العثماني الكامل</div><div class="ayah-ref">سورة ${surahName} — الآية ${aN}</div></div>
+<h2>📍 مدخل يمسّ الإنسان</h2><p>افتتاح قوي يمسّ القارئ ويقوده إلى الآية.</p>
+<h2>📚 المعنى والتفسير الموثق</h2><p>شرح واضح منضبط مع خلاصة من ابن كثير والطبري والقرطبي والسعدي وابن عاشور عند الحاجة.</p>
+<h2>🕰️ سبب النزول والسياق التاريخي</h2><p>اذكر الثابت فقط، وإن لم يثبت سبب خاص فقل ذلك، ثم اربط الآية بسياق السورة والزمن المكي أو المدني إن صح.</p>
+<h2>🔤 المفردات والبلاغة</h2><p>بيان الكلمات المحورية وسر اختيارها وجمال التعبير القرآني.</p>
+<h2>🎙️ لمسة الشعراوي</h2><p>فقرة بأسلوب حي قريب من روح الشعراوي، لا على أنها اقتباس حرفي إلا إذا كنت متيقناً.</p>
+<h2>🔬 الإعجاز</h2><p>إن وجد إعجاز علمي منضبط فاذكره بإيجاز، وإلا فاذكر إعجازاً بيانياً أو تشريعياً أو نفسياً صادقاً.</p>
+<h2>💎 العبرة العميقة — ثلاثة مستويات</h2><div class="ibra-box"><div class="ibra-title">💎 العبرة الجوهرية:</div><p><strong>① المستوى العقدي:</strong> ماذا تبني هذه الآية في صلة العبد بربه؟</p><p><strong>② المستوى النفسي:</strong> كيف تعالج هذه الآية قلب الإنسان وقلقه وكبرياءه أو ضعفه؟</p><p><strong>③ المستوى الحضاري:</strong> كيف يتغير المجتمع لو عاشت الأمة هذا المعنى حقاً؟</p><p><em>ثم اختم بسؤال عميق واحد لا ينسى.</em></p></div>
+<p>أضف بعد العبرة مثالاً واقعياً معاصراً أو تجربة إنسانية ممكنة الوقوع، مرتبطة بالآية مباشرة.</p>
+<h2>🌍 التطبيق في حياتنا اليوم</h2><p>ثلاثة تطبيقات عملية واضحة قابلة للتنفيذ.</p>
+<h2>🕌 القرآن رسالة لك أنت</h2><div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>خاتمة دافئة قوية تخاطب القارئ مباشرة بلا وعظ ثقيل.</p></div>
 
-<div class="science-box"><div class="sci-title">🔬 الإعجاز العلمي — القرآن يثبت نفسه</div><p>[ربط الآية بالعلم الحديث: الاكتشاف + تاريخه + كيف سبقه القرآن]</p></div>
+تنبيهات أخيرة:
+- لا تكتب أي نص أجنبي.
+- لا تترك فراغات أو عبارات مثل [قوله] أو [مثال].
+- لا تكرر نفس الجملة في أكثر من موضع.
+- لا تدخل تعليماتك داخل المقال.
+- اكتب النص النهائي الجاهز للنشر فقط.
+- الطول المستهدف: بين 1200 و1800 كلمة تقريباً، مع بقاء الأسلوب مشوقاً.`;
+  }
 
-<h2>💎 العبرة العميقة — ثلاثة مستويات</h2>
-<div class="ibra-box"><div class="ibra-title">💎 العبرة الجوهرية:</div><p><strong>① المستوى العقدي:</strong> [ماذا تُعلّمنا عن الله والإنسان؟]</p><p><strong>② المستوى النفسي:</strong> [كيف تُغيّر نظرة الإنسان لنفسه؟]</p><p><strong>③ المستوى الحضاري:</strong> [ماذا لو طبّقت البشرية هذا المعنى؟]</p><p><em>[اختم بسؤال عميق يبقى في الذهن]</em></p></div>
-<p>[توسّع بأمثلة واقعية وتاريخية]</p>
+  if (lang === 'fr') {
+    return `Tu es expert en exegese coranique. Redige un article complet ENTIEREMENT EN FRANCAIS sur:
+Sourate: ${surahName} (n ${sN}) - Verset: ${aN}
 
-<h2>🌍 التطبيق في حياتنا اليوم</h2>
-<p>[تطبيقات عملية ملموسة في القرن 21]</p>
+Regles strictes: (1) Francais uniquement, zero mot etranger (2) Chaque avis attribue a son savant (3) Si l occasion de revelation est inconnue, le dire honnêtement (4) Structure logique et enchaînee
 
-<h2>🕌 القرآن رسالة لك أنت</h2>
-<div class="cta-box"><h3>﴿ أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ ﴾</h3><p>[خاتمة تخاطب القارئ مباشرة]</p></div>
+Structure HTML interne (sans DOCTYPE):
+<div class="ayah-box"><div class="ayah-text">[Texte arabe du verset]</div><div class="ayah-ref">Sourate ${surahName} - Verset ${aN}</div></div>
+<h2>Contexte et occasion de revelation</h2><p>[contexte dans la sourate - occasion si prouvee, sinon le dire clairement]</p>
+<h2>Exegese des savants</h2><p>Ibn Kathir a dit: [...] | Al-Tabari mentionne: [...] | Al-Qurtubi precise: [...] | Al-Saadi explique: [...] | Ibn Achour ajoute: [...]</p>
+<h3>Analyse lexicale et rhetorique</h3><p>[etymologie des mots-cles, figures de style, beaute linguistique]</p>
+<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Reflexion du Sheikh Al-Sharawi</div></div><div class="sh-body"><p>[style direct et chaleureux, exemples concrets de la vie quotidienne, 15-20 lignes]</p></div></div>
+<div class="science-box"><div class="sci-title">Miracle</div><p>[miracle scientifique si prouve - sinon miracle rhetorique ou legislatif]</p></div>
+<h2>Trois niveaux de lecon</h2><div class="ibra-box"><div class="ibra-title">Enseignement fondamental</div><p><strong>Niveau theologique:</strong> [...]</p><p><strong>Niveau psychologique:</strong> [...]</p><p><strong>Niveau civilisationnel:</strong> [...]</p><p><em>Question pour le lecteur: [...]</em></p></div>
+<h2>Application concrete aujourd'hui</h2><p>[3 applications pratiques dans la vie du XXIe siecle]</p>
+<div class="cta-box"><h3>Appel a la reflexion</h3><p>[conclusion s adressant directement au lecteur]</p></div>
+Longueur: 1800 mots minimum. HTML interne uniquement.`;
+  }
 
-الأسلوب: فصيح سلس علمي مؤثر. الطول: 1500+ كلمة. HTML داخلي فقط بدون DOCTYPE.`;
+  if (lang === 'en') {
+    return `You are a Quranic exegesis specialist. Write a rigorous article ENTIRELY IN ENGLISH about:
+Surah: ${surahName} (n.${sN}) - Verse: ${aN}
+
+Strict rules: (1) English only (2) Attribute every opinion to its scholar (3) Never fabricate - if occasion of revelation unknown, state so (4) Logical structure
+
+HTML structure (no DOCTYPE):
+<div class="ayah-box"><div class="ayah-text">[Arabic text in Uthmanic script]</div><div class="ayah-ref">Surah ${surahName} - Verse ${aN}</div></div>
+<h2>Context and Occasion of Revelation</h2><p>[context in the surah - occasion if proven, otherwise state unknown]</p>
+<h2>Scholarly Exegesis</h2><p>Ibn Kathir stated: [...] | Al-Tabari mentioned: [...] | Al-Qurtubi noted: [...] | Al-Saadi explained: [...] | Ibn Ashur added: [...]</p>
+<h3>Lexical and Rhetorical Analysis</h3><p>[etymology of key words, rhetorical figures, linguistic beauty]</p>
+<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Sheikh Al-Sharawi Reflection</div></div><div class="sh-body"><p>[warm direct style, everyday examples, 15-20 lines]</p></div></div>
+<div class="science-box"><div class="sci-title">Miracle</div><p>[scientific if proven, otherwise rhetorical or legislative]</p></div>
+<h2>The Lesson - Three Levels</h2><div class="ibra-box"><div class="ibra-title">Core Teaching</div><p><strong>Theological:</strong> [...]</p><p><strong>Psychological:</strong> [...]</p><p><strong>Civilizational:</strong> [...]</p><p><em>Reflection: [deep question for the reader]</em></p></div>
+<h2>Practical Application Today</h2><p>[3 concrete applications in 21st century life]</p>
+<div class="cta-box"><h3>Call to Reflection</h3><p>[conclusion addressing reader directly]</p></div>
+Minimum 1800 words. Internal HTML only.`;
+  }
+
+  if (lang === 'tr') {
+    return `Kuran tefsiri uzmanisın. YALNIZCA TURKCE kapsamli makale yaz:
+Sure: ${surahName} (No.${sN}) - Ayet: ${aN}
+
+Kurallar: (1) Sadece Turkce (2) Her gorusu alimini belirterek aktar (3) Bilgi uydurma (4) Mantikli yapi
+
+<div class="ayah-box"><div class="ayah-text">[Arapca metin Osmanlı yazisiyla]</div><div class="ayah-ref">Sure ${surahName} - Ayet ${aN}</div></div>
+<h2>Baglam ve Inis Sebebi</h2><p>[bilinmiyorsa durustce belirt]</p>
+<h2>Alimlerin Tefsiri</h2><p>Ibn Kesir: [...] | Taberi: [...] | Kurtubi: [...] | Saadi: [...] | Ibn Asur: [...]</p>
+<h3>Kelime ve Belagat Analizi</h3><p>[etimoloji, edebi sanatlar]</p>
+<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Seyh Sarawi Dusuncesi</div></div><div class="sh-body"><p>[sicak samimi uslup, gunluk hayattan ornekler, 15-20 satir]</p></div></div>
+<div class="science-box"><div class="sci-title">Mucize</div><p>[bilimsel ise kanitla, degilse belagat mucizesi]</p></div>
+<h2>Uc Seviyede Ders</h2><div class="ibra-box"><div class="ibra-title">Temel Ogreti</div><p><strong>Akidevi:</strong> [...]</p><p><strong>Psikolojik:</strong> [...]</p><p><strong>Medeniyet:</strong> [...]</p><p><em>Dusunce sorusu: [...]</em></p></div>
+<h2>Bugun Pratik Uygulama</h2><p>[21. yuzyilda 3 somut uygulama]</p>
+<div class="cta-box"><h3>Tefekkur Cagri</h3><p>[okuyucuya hitap eden sonuc]</p></div>
+En az 1800 kelime. Yalnizca ic HTML.`;
+  }
+
+  return `Anda pakar tafsir Al-Quran. Tulis artikel ilmiah BAHASA INDONESIA SAJA tentang:
+Surah: ${surahName} (No.${sN}) - Ayat: ${aN}
+
+Aturan: (1) Bahasa Indonesia saja (2) Setiap pendapat dikaitkan ulamannya (3) Jangan mengarang (4) Struktur logis
+
+<div class="ayah-box"><div class="ayah-text">[Teks Arab Utsmani]</div><div class="ayah-ref">Surah ${surahName} - Ayat ${aN}</div></div>
+<h2>Konteks dan Asbabun Nuzul</h2><p>[jika tidak diketahui, nyatakan jujur]</p>
+<h2>Tafsir Para Ulama</h2><p>Ibnu Katsir: [...] | Al-Thabari: [...] | Al-Qurthubi: [...] | Al-Saadi: [...] | Ibnu Asyur: [...]</p>
+<h3>Analisis Kosakata dan Balaghah</h3><p>[etimologi, majas]</p>
+<div class="sharawi-box"><div class="sh-head"><div class="sh-title">Renungan Syekh Al-Syarawi</div></div><div class="sh-body"><p>[gaya hangat langsung, contoh kehidupan sehari-hari, 15-20 baris]</p></div></div>
+<div class="science-box"><div class="sci-title">Kemukjizatan</div><p>[ilmiah jika terbukti, jika tidak: balaghah atau tasyrii]</p></div>
+<h2>Tiga Tingkat Pelajaran</h2><div class="ibra-box"><div class="ibra-title">Inti Pelajaran</div><p><strong>Akidah:</strong> [...]</p><p><strong>Psikologi:</strong> [...]</p><p><strong>Peradaban:</strong> [...]</p><p><em>Perenungan: [pertanyaan untuk pembaca]</em></p></div>
+<h2>Penerapan Praktis Hari Ini</h2><p>[3 penerapan konkret abad ke-21]</p>
+<div class="cta-box"><h3>Seruan Refleksi</h3><p>[penutup kepada pembaca]</p></div>
+Minimal 1800 kata. HTML internal saja.`;
+}
+
+// ═══════════════════════════════════════════════
+// TEST CONNECTION
+// ═══════════════════════════════════════════════
+async function testConnection() {
+  const cfg = getCfg();
+  if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أدخل البيانات أولاً','error');return;}
+  addLog('[...] يختبر الاتصال بـ GitHub...');
+  try {
+    const res = await fetch(GH_API+'/repos/'+cfg.user+'/'+cfg.repo, {
+      headers:{Authorization:'token '+cfg.token, Accept:'application/vnd.github.v3+json'}
+    });
+    if(res.ok) {
+      const d = await res.json();
+      addLog('[OK] الاتصال ناجح! المستودع: '+d.full_name,'success');
+      document.getElementById('btn-init').disabled = false;
+    } else {
+      const e = await res.json();
+      addLog('[X] فشل: '+res.status+' — '+(e.message||'خطأ'),'error');
+    }
+  } catch(e) { addLog('[X] خطأ في الشبكة: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════
+// TEST PUBLISH
+// ═══════════════════════════════════════════════
+async function testPublish() {
+  const cfg = getCfg();
+  if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أدخل البيانات في تبويب الإعداد','error');return;}
+  addLog('[...] اختبار الكتابة على GitHub...');
+  try {
+    const testContent = '<!-- test '+Date.now()+' -->';
+    await pubFile(cfg.token,cfg.user,cfg.repo,'test-write.html',testContent,'اختبار الكتابة');
+    addLog('[OK] النشر يعمل! يمكن الكتابة على GitHub','success');
+    addLog('[...] حذف ملف الاختبار...');
+    // Try to delete it
+    const ex = await ghGet(cfg.token,cfg.user,cfg.repo,'test-write.html');
+    if(ex && ex.sha) {
+      await fetch(GH_API+'/repos/'+cfg.user+'/'+cfg.repo+'/contents/test-write.html', {
+        method:'DELETE',
+        headers:{'Authorization':'token '+cfg.token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+        body:JSON.stringify({message:'حذف اختبار',sha:ex.sha})
+      });
+      addLog('[OK] تم حذف ملف الاختبار','success');
+    }
+  } catch(e) {
+    addLog('[X] النشر فشل: '+e.message,'error');
+    addLog('تأكد أن Token يملك صلاحية contents:write','warn');
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -660,7 +1006,7 @@ async function initRepo() {
   const cfg = getCfg();
   if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أكمل البيانات أولاً','error');return;}
   addLog('[...] تهيئة الموقع...');
-  document.querySelector('.btn-g').disabled = true;
+  document.getElementById('btn-init').disabled = true;
   try {
     await pubFile(cfg.token,cfg.user,cfg.repo,'index.html',makeHomeHTML([]),'🕌 تهيئة الرئيسية');
     addLog('[OK] index.html','success');
@@ -685,7 +1031,7 @@ async function initRepo() {
   } catch(e) {
     addLog('[X] خطأ: '+e.message,'error');
   }
-  document.querySelector('.btn-g').disabled = false;
+  document.getElementById('btn-init').disabled = false;
 }
 
 // ═══════════════════════════════════════════════
@@ -694,7 +1040,7 @@ async function initRepo() {
 async function generateArticle(sN=null, aN=null) {
   const cfg = getCfg();
   if(!cfg.token){addLog('[X] أدخل GitHub Token','error');switchTab('config');return;}
-  if(!cfg.groq){addLog('[X] أدخل مفتاح Groq (مجاني من console.groq.com)','error');switchTab('config');return;}
+  if(!cfg.groq && !cfg.groq2 && !cfg.groq3){addLog('[X] أدخل مفتاح API واحداً على الأقل في الإعداد','error');switchTab('config');return;}
   const surahN = sN || parseInt(document.getElementById('sel-surah').value);
   const ayahN = aN || parseInt(document.getElementById('sel-ayah').value);
   const s = SURAHS.find(x=>x.n===surahN);
@@ -704,33 +1050,31 @@ async function generateArticle(sN=null, aN=null) {
   addLog('[AI] يولّد بـ Groq: سورة '+s.name+' آية '+ayahN+'...');
 
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+cfg.groq
-      },
-      body:JSON.stringify({
-        model:'llama-3.3-70b-versatile',
-        max_tokens:4000,
-        messages:[{role:'user',content:buildPrompt(s.name,surahN,ayahN)}]
-      })
-    });
-    const d = await res.json();
-    if(d.error) throw new Error(d.error.message);
-    const text = d.choices[0].message.content;
+    const prompt = buildPrompt(s.name,surahN,ayahN,document.getElementById('sel-lang').value);
+    addLog('[AI] يتصل بـ API...');
+    const text = await generateValidatedArticle(prompt, cfg);
     preview = {
       surah:surahN, ayah:ayahN, surahName:s.name,
       title:'تفسير سورة '+s.name+' — الآية '+ayahN,
-      slug:'surah-'+surahN+'-ayah-'+ayahN,
+      slug:'surah-'+surahN+'-ayah-'+ayahN+(document.getElementById('sel-lang').value!='ar'?'-'+document.getElementById('sel-lang').value:''),
       content:text
     };
-    document.getElementById('preview-title').textContent = preview.title;
-    document.getElementById('preview-chars').textContent = preview.content.length.toLocaleString() + ' حرف';
+    // Render preview directly into the zone
+    var zone = document.getElementById('preview-zone');
+    zone.innerHTML = 
+      '<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">' +
+        '<div>' +
+          '<div style="font-weight:700;color:#0a3d2e;font-size:1em">' + preview.title + '</div>' +
+          '<div style="color:#888;font-size:.8em;margin-top:2px">' + preview.content.length.toLocaleString() + ' حرف</div>' +
+        '</div>' +
+        '<div class="row" style="margin:0">' +
+          '<button class="btn-au" id="btn-pub" onclick="publishArticle()">نشر على GitHub Pages</button>' +
+          '<button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="preview-area" id="preview-body"></div>';
     document.getElementById('preview-body').innerHTML = preview.content;
-    document.getElementById('preview-empty').style.display = 'none';
-    document.getElementById('preview-content').style.display = 'block';
-    document.getElementById('tab-preview').textContent = '👁️ معاينة ✓';
+    document.querySelectorAll('.tab')[2].textContent = 'معاينة (جاهز)';
     document.getElementById('btn-preview').style.display = 'inline-block';
     addLog('[OK] تم توليد: '+preview.title,'success');
     switchTab('preview');
@@ -749,11 +1093,12 @@ async function publishArticle() {
   if(!preview){addLog('[X] لا يوجد مقال','error');return;}
   if(!cfg.token||!cfg.user||!cfg.repo){addLog('[X] أكمل إعدادات GitHub','error');switchTab('config');return;}
 
-  document.getElementById('btn-pub').disabled = true;
-  document.getElementById('btn-pub').textContent = '⏳ ينشر...';
+  var pb = document.getElementById('btn-pub');
+  if(pb){ pb.disabled = true; pb.textContent = 'ينشر...'; }
   addLog('[>>>] ينشر: '+preview.title+'...');
 
   try {
+    addLog('[...] يرسل إلى GitHub API...');
     const newList = [...articles.filter(a=>a.slug!==preview.slug), {
       slug:preview.slug, title:preview.title,
       surahName:preview.surahName, surah:preview.surah, ayah:preview.ayah
@@ -769,10 +1114,11 @@ async function publishArticle() {
     renderProgress();
     addLog('[OK] نُشر! https://'+cfg.user+'.github.io/'+cfg.repo+'/articles/'+preview.slug+'.html','success');
   } catch(e) {
-    addLog('[X] '+e.message,'error');
+    addLog('[X] نشر فشل: '+e.message,'error');
+    console.error('Publish error:', e);
   }
-  document.getElementById('btn-pub').disabled = false;
-  document.getElementById('btn-pub').textContent = '🚀 نشر على GitHub Pages';
+  var pb2 = document.getElementById('btn-pub');
+  if(pb2){ pb2.disabled = false; pb2.textContent = 'نشر على GitHub Pages'; }
 }
 
 // ═══════════════════════════════════════════════
@@ -781,7 +1127,7 @@ async function publishArticle() {
 async function startBatch() {
   const cfg = getCfg();
   if(!cfg.token){addLog('[X] أدخل GitHub Token','error');switchTab('config');return;}
-  if(!cfg.groq){addLog('[X] أدخل مفتاح Groq (مجاني من console.groq.com)','error');switchTab('config');return;}
+  if(!cfg.groq && !cfg.groq2 && !cfg.groq3){addLog('[X] أدخل مفتاح API واحداً على الأقل في الإعداد','error');switchTab('config');return;}
   batchRunning = true;
   document.getElementById('btn-batch').disabled = true;
   document.getElementById('btn-stop').style.display = 'inline-block';
@@ -799,21 +1145,10 @@ async function startBatch() {
 
     addLog('[~] ['+( done+1)+'/'+count+'] سورة '+s.name+' آية '+ai);
     try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':'Bearer '+cfg.groq
-        },
-        body:JSON.stringify({
-          model:'llama-3.3-70b-versatile',
-          max_tokens:4000,
-          messages:[{role:'user',content:buildPrompt(s.name,si,ai)}]
-        })
-      });
-      const d = await res.json();
-      if(!d.error) {
-        const text = d.choices[0].message.content;
+      try {
+        const bPrompt = buildPrompt(s.name,si,ai,document.getElementById('batch-lang').value);
+        const text = await generateValidatedArticle(bPrompt, cfg);
+        if(text) {
         const a = {surah:si,ayah:ai,surahName:s.name,title:'تفسير سورة '+s.name+' — الآية '+ai,slug:'surah-'+si+'-ayah-'+ai,content:text};
         preview = a;
         const newList = [...articles.filter(x=>x.slug!==a.slug),{slug:a.slug,title:a.title,surahName:a.surahName,surah:a.surah,ayah:a.ayah}].sort((x,y)=>x.surah-y.surah||x.ayah-y.ayah);
@@ -821,14 +1156,12 @@ async function startBatch() {
         await pubFile(cfg.token,cfg.user,cfg.repo,'index.html',makeHomeHTML(newList),'🏠');
         await pubFile(cfg.token,cfg.user,cfg.repo,'articles.html',makeListHTML(newList),'📚');
         articles = newList;
-        localStorage.setItem('nq-articles', JSON.stringify(articles));
+        try { localStorage.setItem('nq-articles', JSON.stringify(articles)); } catch(e){}
         renderPublished();
         renderProgress();
-        addLog('[OK] نُشر: '+a.title,'success');
-      } else {
-        addLog('[X] Groq: '+d.error.message,'error');
-      }
-    } catch(e) { addLog('[X] '+e.message,'error'); }
+        addLog('[OK] نُشر: '+a.title+' ('+articles.length+' مقال)','success');
+        } // end if text
+      } catch(e) { addLog('[X] '+e.message,'error'); if(e.message.includes('كل المفاتيح')) { batchRunning=false; break; } }
     done++; ai++;
     if(batchRunning && done < count) await new Promise(r=>setTimeout(r,delay));
   }
@@ -890,6 +1223,5 @@ function renderProgress() {
 // START
 init();
 </script>
-
-
-</body></html>
+</body>
+</html>
