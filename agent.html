@@ -1069,7 +1069,7 @@ async function generateArticle(sN=null, aN=null) {
         '</div>' +
         '<div class="row" style="margin:0">' +
           '<button class="btn-au" id="btn-pub" onclick="publishArticle()">نشر على GitHub Pages</button>' +
-          '<button class="btn-o" onclick="switchTab('generate')">← توليد آخر</button>' +
+          '<button class="btn-o" onclick="switchTab(\'generate\')">← توليد آخر</button>' +
         '</div>' +
       '</div>' +
       '<div class="preview-area" id="preview-body"></div>';
@@ -1145,7 +1145,6 @@ async function startBatch() {
 
     addLog('[~] ['+( done+1)+'/'+count+'] سورة '+s.name+' آية '+ai);
     try {
-      try {
         const bPrompt = buildPrompt(s.name,si,ai,document.getElementById('batch-lang').value);
         const text = await generateValidatedArticle(bPrompt, cfg);
         if(text) {
